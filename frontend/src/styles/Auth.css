@@ -1,0 +1,459 @@
+/* ============================================================
+   Auth.css — Layout, card, tabs, form field, OTP styles
+   ============================================================ */
+
+/* ---------- Page Layout ---------- */
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative background blobs */
+.bgBlob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+.bgBlob1 {
+  width: 500px; height: 500px;
+  top: -180px; left: -150px;
+  background: #d4eeee;
+  opacity: 0.55;
+}
+.bgBlob2 {
+  width: 380px; height: 380px;
+  bottom: -120px; right: -100px;
+  background: #fde8c8;
+  opacity: 0.45;
+}
+.bgBlob3 {
+  width: 260px; height: 260px;
+  top: 55%; left: 55%;
+  transform: translate(-50%, -50%);
+  background: #e8d4f0;
+  opacity: 0.25;
+}
+
+/* Subtle dot grid */
+.bgGrid {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,107,107,0.1) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Card ---------- */
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---------- Card Header ---------- */
+.cardHeader {
+  padding: 36px 40px 0;
+  text-align: center;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.brandGem {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--accent), #2a9d9d);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent-dark);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Tabs ---------- */
+.tabRow {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  padding: 5px;
+  gap: 4px;
+  border: 1px solid var(--border);
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 11px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition: all 0.25s ease;
+  letter-spacing: 0.01em;
+}
+
+.tabBtn:hover {
+  color: var(--text-soft);
+  background: rgba(26,107,107,0.06);
+}
+
+.tabBtn.active {
+  background: var(--surface);
+  color: var(--accent-dark);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Card Body ---------- */
+.cardBody {
+  padding: 28px 40px 40px;
+}
+
+/* ---------- Section Heading ---------- */
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.sectionSub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+/* ---------- Form Fields ---------- */
+.fieldGroup {
+  margin-bottom: 18px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.fieldWrap {
+  position: relative;
+}
+
+.fieldIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  opacity: 0.5;
+}
+
+.fieldWrap:focus-within .fieldIcon {
+  opacity: 1;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 13px 14px 13px 42px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: all 0.22s ease;
+  appearance: none;
+}
+
+.fieldInput::placeholder {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.fieldInput:hover {
+  border-color: rgba(26,107,107,0.3);
+}
+
+.fieldInput:focus {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.fieldInput.hasError {
+  border-color: var(--error);
+  background: var(--error-bg);
+  box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
+}
+
+.eyeBtn:hover {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.errMsg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 6px;
+  font-weight: 500;
+  animation: fadeUp 0.2s ease;
+}
+
+/* ---------- Password Strength ---------- */
+.strengthBar {
+  display: flex;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.strengthSeg {
+  height: 4px;
+  flex: 1;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background 0.35s ease;
+}
+
+.strengthLabel {
+  font-size: 11.5px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* ---------- Submit Button ---------- */
+.submitBtn {
+  width: 100%;
+  padding: 15px;
+  margin-top: 22px;
+  background: linear-gradient(135deg, var(--accent) 0%, #2a9d9d 100%);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: all 0.28s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.submitBtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(26,107,107,0.35);
+}
+
+.submitBtn:hover::before {
+  opacity: 1;
+}
+
+.submitBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.submitBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.dividerText {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------- Switch Link ---------- */
+.switchLink {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 20px;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+
+.linkBtn:hover {
+  color: var(--accent-dark);
+}
+
+/* ---------- OTP Section ---------- */
+.otpInfoBox {
+  background: var(--accent-light);
+  border: 1.5px solid rgba(26,107,107,0.25);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  color: var(--accent-dark);
+  margin-bottom: 24px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.otpCenteredLabel {
+  text-align: center;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.otpRow {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.otpBox {
+  width: 54px;
+  height: 62px;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  outline: none;
+  transition: all 0.22s ease;
+  caret-color: var(--accent);
+}
+
+.otpBox:focus {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  animation: pulse 1.5s infinite;
+}
+
+.otpBox.otpFilled {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+.resendRow {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.resendBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+
+.resendBtn:hover {
+  color: var(--accent-dark);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 520px) {
+  .cardHeader { padding: 28px 24px 0; }
+  .cardBody   { padding: 24px 24px 32px; }
+  .otpBox     { width: 44px; height: 52px; font-size: 20px; }
+  .otpRow     { gap: 7px; }
+}

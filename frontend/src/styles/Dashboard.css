@@ -1,0 +1,263 @@
+/* ============================================================
+   Dashboard.css
+   Clean canvas + right-side hover flyout menu
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Root ── */
+.dash {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #f7f5f0;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Background texture ── */
+.dash__bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(26, 122, 94, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(26, 122, 94, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ── Top bar ── */
+.dash__topbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(247, 245, 240, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.dash__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash__gem {
+  font-size: 18px;
+  color: #1a7a5e;
+}
+
+.dash__brandName {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+}
+
+.dash__userPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.dash__userDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1a7a5e;
+}
+
+/* ── Main empty canvas ── */
+.dash__main {
+  width: 100%;
+  height: calc(100vh - 65px);
+}
+
+/* ── Right hover menu container ── */
+.dash__menuTrigger {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ── Always-visible pill ── */
+.dash__pill {
+  position: relative;
+  z-index: 2;
+  width: 28px;
+  height: 72px;
+  background: #1a7a5e;
+  border-radius: 12px 0 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -4px 0 20px rgba(26, 122, 94, 0.25);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.dash__menuTrigger.open .dash__pill {
+  background: #155f49;
+  width: 32px;
+}
+
+.dash__pillDots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dash__pillDots span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s ease;
+}
+
+.dash__menuTrigger.open .dash__pillDots span:nth-child(1) { transform: translateY(2px); }
+.dash__menuTrigger.open .dash__pillDots span:nth-child(3) { transform: translateY(-2px); }
+
+/* ── Flyout panel ── */
+.dash__flyout {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%) translateX(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash__menuTrigger.open .dash__flyout {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(-50%) translateX(0);
+}
+
+.dash__flyoutInner {
+  background: #fff;
+  border-radius: 16px 0 0 16px;
+  padding: 12px 0;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12), -2px 0 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-right: none;
+  min-width: 180px;
+}
+
+/* ── Menu items ── */
+.dash__menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #555;
+  text-align: left;
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease;
+  opacity: 0;
+  transform: translateX(8px);
+  animation: none;
+}
+
+.dash__menuTrigger.open .dash__menuItem {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 0.05s);
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.dash__menuItem:hover {
+  background: #f5faf8;
+  color: #1a7a5e;
+}
+
+.dash__menuItem.active {
+  color: #1a7a5e;
+  font-weight: 500;
+  background: #f0faf5;
+}
+
+.dash__menuIcon {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dash__menuLabel {
+  flex: 1;
+}
+
+.dash__activeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1a7a5e;
+  flex-shrink: 0;
+}
+
+/* ── Divider ── */
+.dash__menuDivider {
+  margin: 8px 16px;
+  border: none;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ── Logout item ── */
+.dash__logoutItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #aaa;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+  opacity: 0;
+  transform: translateX(8px);
+}
+
+.dash__menuTrigger.open .dash__logoutItem {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.22s;
+}
+
+.dash__logoutItem:hover {
+  background: #fff5f5;
+  color: #e55;
+}

@@ -1,0 +1,96 @@
+/* ============================================================
+   global.css — Design tokens, resets, and base styles
+   Light theme: warm ivory + deep teal accents
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ---------- Design Tokens ---------- */
+:root {
+  /* Core palette */
+  --bg:          #f7f4ef;        /* warm ivory page background */
+  --surface:     #ffffff;        /* card surface */
+  --surface-2:   #f0ece4;        /* subtle inner backgrounds */
+
+  /* Accent — deep teal */
+  --accent:      #1a6b6b;
+  --accent-dark: #124d4d;
+  --accent-light:#e6f4f4;
+  --accent-glow: rgba(26,107,107,0.18);
+
+  /* Text */
+  --text:        #1c1c1e;
+  --text-soft:   #5a5a5a;
+  --text-muted:  #9a9a9a;
+
+  /* Feedback */
+  --error:       #c0392b;
+  --error-bg:    #fdf0ef;
+  --success:     #1a8a4a;
+  --warning:     #c47d0e;
+
+  /* Borders & shadow */
+  --border:      rgba(0,0,0,0.09);
+  --border-focus:var(--accent);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.07);
+  --shadow-md:   0 8px 32px rgba(0,0,0,0.10);
+  --shadow-lg:   0 24px 64px rgba(0,0,0,0.13);
+
+  /* Shape */
+  --radius-sm:   8px;
+  --radius:      14px;
+  --radius-lg:   22px;
+  --radius-xl:   32px;
+
+  /* Typography */
+  --font-display:'Cormorant Garamond', Georgia, serif;
+  --font-body:   'DM Sans', sans-serif;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button { font-family: var(--font-body); }
+input  { font-family: var(--font-body); }
+
+/* ---------- Keyframes (shared) ---------- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(40px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(-40px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%       { box-shadow: 0 0 0 8px transparent; }
+}
