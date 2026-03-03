@@ -1,8 +1,3 @@
-/* ============================================================
-   Dashboard.css
-   Clean canvas + right-side hover flyout menu
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
 
 /* ── Root ── */
@@ -79,10 +74,15 @@
 
 /* ── Main empty canvas ── */
 .dash__main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  margin-right: 0;  /* Changed from default */
+  transition: margin-right 0.2s ease;
+  min-height: 100vh;
   width: 100%;
-  height: calc(100vh - 65px);
+  box-sizing: border-box;
 }
-
 /* ── Right hover menu container ── */
 .dash__menuTrigger {
   position: fixed;
@@ -94,6 +94,11 @@
   align-items: center;
   justify-content: flex-end;
 }
+
+.dash__menuTrigger.open ~ .dash__main {
+  margin-right: 260px;  /* Match flyout width */
+}
+
 
 /* ── Always-visible pill ── */
 .dash__pill {
@@ -261,3 +266,37 @@
   background: #fff5f5;
   color: #e55;
 }
+
+.users__container {
+  max-width: calc(100vw - 280px);  /* Prevent content from going under menu */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dash__menuTrigger.open ~ .dash__main {
+    margin-right: 0;
+  }
+  
+  .users__container {
+    max-width: 100%;
+  }
+}
+.dash {
+  min-height: 100vh;
+  /* Remove any: overflow: hidden — replace with: */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Main content area must NOT clip its children */
+.dash__main {
+  /* Remove any fixed height or overflow: hidden */
+  overflow: visible;
+  /* Let it grow as tall as its content */
+  min-height: calc(100vh - 60px); /* adjust 60px to your topbar height */
+  padding-bottom: 3rem; /* breathing room at the bottom */
+}
+
+
+
+

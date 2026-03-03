@@ -1,14 +1,9 @@
-// ============================================================
-// App.jsx — Root component
-// Renders the auth card with Login / Register tab switcher.
-// Tab state lives here so both forms can trigger a tab switch.
-// ============================================================
-
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginForm from './components/LoginForm'
 import RegisterForm from './components/RegisterForm'
 import Dashboard from './components/Dashboard'
+import Users from './components/Users'  // Import Users component
 import './styles/Auth.css'
 
 function AuthPage() {
@@ -81,10 +76,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/"          element={<AuthPage />} />
+        <Route path="/" element={<AuthPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/users" element={<Users />} />  {/* New Users route */}
         {/* Catch-all → back to home */}
-        <Route path="*"          element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

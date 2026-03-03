@@ -59,7 +59,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
   const [toast, setToast] = useState(null);
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  // FIX 4: Track pending email so we can cancel it if user goes back
+  // Track pending email so we can cancel it if user goes back
   const [pendingEmail, setPendingEmail] = useState(null);
 
   const [form, setForm] = useState(() => {
@@ -82,26 +82,26 @@ export default function RegisterForm({ onSwitchToLogin }) {
     setToast({ type, title, message });
   };
 
-  // FIX 4: Call cancel-pending API when user goes back
-  // const cancelPending = async () => {
-  //   if (!pendingEmail) return;
-  //   try {
-  //     await fetch("http://localhost:5000/api/auth/cancel-pending", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ email: pendingEmail }),
-  //     });
-  //   } catch (err) {
-  //     console.error("Cancel pending error:", err);
-  //   }
-  //   setPendingEmail(null);
-  // };
+  // Call cancel-pending API when user goes back
+  const cancelPending = async () => {
+    if (!pendingEmail) return;
+    try {
+      await fetch("http://localhost:5000/api/auth/cancel-pending", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: pendingEmail }),
+      });
+    } catch (err) {
+      console.error("Cancel pending error:", err);
+    }
+    setPendingEmail(null);
+  };
 
-  // STEP 1: Validate one-by-one and submit
-  const handleSubmit = async (e) => {
+  // STEP 1: Validate one-by-one and move to telegram step (NO API CALL)
+  const handleContinue = async (e) => {
     e.preventDefault();
 
-    // FIX 2: Find the first failing field and show only that error
+    // Find the first failing field and show only that error
     for (const key of FIELD_ORDER) {
       const err = validateField(key, form[key]);
       if (err) {
@@ -111,8 +111,15 @@ export default function RegisterForm({ onSwitchToLogin }) {
     }
 
     setErrors({});
-    setLoading(true);
+    
+    // Just move to telegram step - NO API CALL
+    goToStep("telegram");
+  };
 
+  // STEP 2: Connect Telegram API call
+  const handleConnectTelegram = async () => {
+    setLoading(true);
+    
     try {
       const response = await fetch(
         "http://localhost:5000/api/auth/connect-telegram",
@@ -132,9 +139,13 @@ export default function RegisterForm({ onSwitchToLogin }) {
         if (lower.includes("username") && (lower.includes("taken") || lower.includes("already") || lower.includes("exists"))) {
           setErrors({ username: "This username is already taken" });
           showToast("error", "Username Taken", "Please choose a different username.");
+          // Go back to form to fix
+          goToStep("form");
         } else if (lower.includes("email") && (lower.includes("registered") || lower.includes("already") || lower.includes("exists"))) {
           setErrors({ email: "This email is already registered" });
           showToast("error", "Email Already Registered", "An account with this email exists. Please sign in.");
+          // Go back to form to fix
+          goToStep("form");
         } else {
           showToast("error", "Registration Failed", msg || "Something went wrong.");
         }
@@ -142,21 +153,19 @@ export default function RegisterForm({ onSwitchToLogin }) {
       }
 
       setTelegramLink(data.telegramLink);
-      // setPendingEmail(form.email); 
-      // // FIX 4: mark as pending
-      goToStep("telegram");
+      setPendingEmail(form.email); // mark as pending
+      
+      // Open Telegram in new tab
+      window.open(data.telegramLink, "_blank");
+      
+      // Move to OTP step
+      goToStep("otp");
     } catch (err) {
       console.error(err);
       showToast("error", "Server Error", "Could not connect to server. Try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  // STEP 2: Open Telegram → move to OTP input
-  const handleConnectTelegram = () => {
-    window.open(telegramLink, "_blank");
-    goToStep("otp");
   };
 
   // STEP 3: Verify OTP and register
@@ -188,7 +197,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         return;
       }
 
-      // setPendingEmail(null); // registration complete
+      setPendingEmail(null); // registration complete
       sessionStorage.removeItem('regStep');
       sessionStorage.removeItem('regForm');
       showToast("success", "🎉 Registered!", "Your account has been created successfully.");
@@ -220,8 +229,12 @@ export default function RegisterForm({ onSwitchToLogin }) {
           An OTP will be sent to your Telegram automatically.
         </p>
 
-        <button className="submitBtn" onClick={handleConnectTelegram}>
-          Connect Telegram &amp; Send OTP →
+        <button 
+          className="submitBtn" 
+          onClick={handleConnectTelegram}
+          disabled={loading}
+        >
+          {loading ? "Connecting..." : "Connect Telegram & Send OTP →"}
         </button>
 
         <button
@@ -229,13 +242,11 @@ export default function RegisterForm({ onSwitchToLogin }) {
           className="linkBtn"
           style={{ marginTop: "12px" }}
           onClick={async () => {
-            // await cancelPending(); // FIX 4: delete pending record before going back
-            sessionStorage.removeItem("regStep");
-            sessionStorage.removeItem("regForm");
+            await cancelPending(); // delete pending record before going back
             goToStep("form");
           }}
         >
-          ← Back
+          ← Back to Edit Info
         </button>
       </div>
     );
@@ -293,11 +304,11 @@ export default function RegisterForm({ onSwitchToLogin }) {
           className="linkBtn"
           style={{ marginTop: "12px" }}
           onClick={async () => {
-            // await cancelPending(); // FIX 4: delete pending record before going back
+            await cancelPending(); // delete pending record before going back
             goToStep("telegram");
           }}
         >
-          ← Back
+          ← Back to Telegram
         </button>
       </div>
     );
@@ -315,7 +326,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         />
       )}
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleContinue} noValidate>
         <div className="sectionTitle">Create account</div>
         <div className="sectionSub">Join us — it only takes a minute</div>
 
@@ -360,7 +371,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         </div>
 
         <button type="submit" className="submitBtn" disabled={loading}>
-          {loading ? "Please wait..." : "Continue →"}
+          Continue →
         </button>
 
         <div className="switchLink">

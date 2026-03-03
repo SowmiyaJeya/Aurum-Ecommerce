@@ -9,11 +9,13 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use("/", authRoutes); 
+app.use("/add-users",authRoutes)
 
 
 
 setInterval(() => {
   checkTelegramUpdates();
-}, 5000); // check every 5 seconds
+}, 5000); 
 
 module.exports = app;

@@ -1,10 +1,3 @@
-// ============================================================
-// LoginForm.jsx
-// - Calls POST /api/auth/login with { username, password }
-// - Handles: empty fields, user not found, wrong password
-// - On success: shows toast → redirects to /dashboard
-// ============================================================
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Toast from './Toast'

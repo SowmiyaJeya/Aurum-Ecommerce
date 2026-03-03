@@ -1,17 +1,12 @@
-// ============================================================
-// Dashboard.jsx
-// Clean dashboard — hover menu on the right side
-// ============================================================
-
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../styles/Dashboard.css'
 
 const MENUS = [
-  { icon: '⬡', label: 'Overview',  key: 'overview' },
-  { icon: '◈', label: 'Tasks',     key: 'tasks'    },
-  { icon: '◎', label: 'Analytics', key: 'analytics'},
-  { icon: '◇', label: 'Settings',  key: 'settings' },
+  { icon: '⬡', label: 'Users',     key: 'users',    path: '/users' },
+  { icon: '◈', label: 'Tasks',     key: 'tasks',    path: '/tasks' },
+  { icon: '◎', label: 'Analytics', key: 'analytics', path: '/analytics' },
+  { icon: '◇', label: 'Settings',  key: 'settings',  path: '/settings' },
 ]
 
 export default function Dashboard() {
@@ -30,6 +25,11 @@ export default function Dashboard() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     navigate('/')
+  }
+
+  const handleMenuClick = (menu) => {
+    setActive(menu.key)
+    navigate(menu.path)
   }
 
   if (!user) return null
@@ -77,7 +77,7 @@ export default function Dashboard() {
                 key={m.key}
                 className={`dash__menuItem${active === m.key ? ' active' : ''}`}
                 style={{ '--i': i }}
-                onClick={() => setActive(m.key)}
+                onClick={() => handleMenuClick(m)}
               >
                 <span className="dash__menuIcon">{m.icon}</span>
                 <span className="dash__menuLabel">{m.label}</span>

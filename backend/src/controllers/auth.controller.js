@@ -4,7 +4,6 @@ const generateOTP = require("../../utils/generateOtp");
 const hashPassword = require("../../utils/hashPassword");
 const { sendOTP } = require("../services/telegram.service");
 const { saveOTP, verifyOTP } = require("../services/otp.service");
-// const { createUser, saveTelegramToken, getUserByTelegramToken, saveChatId } = require("../services/user.service");
 const {
   saveTelegramToken,
   getUserByTelegramToken,
@@ -15,6 +14,7 @@ require("dotenv").config();
 const pool = require("../config/db");
 
 const { createPendingUser } = require("../services/user.service");
+const { getAllUsers , addUser} = require("../services/user.service");
 
 exports.connectTelegram = async (req, res) => {
   try {
@@ -195,7 +195,7 @@ exports.login = async (req, res) => {
     const user = result.rows[0];
 
     // 🚫 Check account status
-    if (user.status !== "active") {
+    if (user.status !== 1) {
       return res.status(403).json({
         message: "Account not verified. Please complete registration.",
       });
@@ -224,6 +224,57 @@ exports.login = async (req, res) => {
     console.error("Login error:", error);
     return res.status(500).json({
       message: "Server error",
+    });
+  }
+};
+
+//display all the users
+exports.handleUserActions = async (req, res) => {
+  try {
+    const { type, page = 1, limit = 5 } = req.body;
+
+    if (type === "getAllUsers") {
+      const result = await getAllUsers(page, limit);
+
+      return res.status(200).json({
+        success: true,
+        ...result
+      });
+    }
+
+    return res.status(400).json({
+      message: "Invalid request type"
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message
+    });
+  }
+};
+
+exports.addUserController = async (req, res) => {
+  try {
+    const { fullname, username, password, email, mobile, role } = req.body;
+
+    if (!fullname || !username || !password || !email || !mobile || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
+    }
+
+    const result = await addUser(req.body);
+
+    return res.status(201).json({
+      success: true,
+      message: result.message
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
