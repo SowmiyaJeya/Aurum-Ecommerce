@@ -14,7 +14,7 @@ require("dotenv").config();
 const pool = require("../config/db");
 
 const { createPendingUser } = require("../services/user.service");
-const { getAllUsers , addUser} = require("../services/user.service");
+const { getAllUsers , addUser,editUser,deleteUser} = require("../services/user.service");
 
 exports.connectTelegram = async (req, res) => {
   try {
@@ -64,9 +64,7 @@ exports.connectTelegram = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-// ===============================
 // 2️⃣ STEP 2 — Called from polling when /start TOKEN is received
-// ===============================
 exports.handleTelegramStart = async (token, chatId) => {
   try {
     const user = await getUserByTelegramToken(token);
@@ -273,6 +271,57 @@ exports.addUserController = async (req, res) => {
 
   } catch (error) {
     return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+exports.editUserController = async (req, res) => {
+  try {
+    const { usercode } = req.body;
+
+    if (!usercode) {
+      return res.status(400).json({
+        success: false,
+        message: "Usercode is required"
+      });
+    }
+
+    const result = await editUser(req.body);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message
+    });
+
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.deleteUserController=async(req,res)=>{
+   try {
+    const { usercode } = req.body;
+
+    if (!usercode) {
+      return res.status(400).json({
+        success: false,
+        message: "Usercode is required"
+      });
+    }
+
+    const result = await deleteUser(usercode);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message
+    });
+
+  } catch (error) {
+    return res.status(400).json({
       success: false,
       message: error.message
     });

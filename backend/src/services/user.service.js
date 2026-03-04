@@ -59,11 +59,12 @@ const getAllUsers = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
 
   const dataQuery = await pool.query(
-    `SELECT fullname, username, email, mobile, updated_at 
+    `SELECT usercode,fullname, username, email, mobile, updated_at 
      FROM users
-     ORDER BY usercode
+     ORDER BY updated_at desc
      LIMIT $1 OFFSET $2`,
     [limit, offset]
+    
   );
 
   const countQuery = await pool.query(
@@ -77,79 +78,6 @@ const getAllUsers = async (page = 1, limit = 10) => {
     limit
   };
 };
-
-//Add users from users tab
-// const addUser = async (userData) => {
-//   const { fullname, username, password, email, mobile, role } = userData;
-
-//   // Start transaction
-//   const client = await pool.connect();
-
-//   try {
-//     await client.query("BEGIN");
-
-//     // 1️⃣ Check if role exists
-//     let roleResult = await client.query(
-//       `SELECT roleid FROM userRoles WHERE rolename = $1`,
-//       [role]
-//     );
-
-//     let roleid;
-
-//     // 2️⃣ If role doesn't exist → insert
-//     if (roleResult.rows.length === 0) {
-//       const insertRole = await client.query(
-//         `INSERT INTO userRoles (rolename)
-//          VALUES ($1)
-//          RETURNING roleid`,
-//         [role]
-//       );
-//       roleid = insertRole.rows[0].roleid;
-//     } else {
-//       roleid = roleResult.rows[0].roleid;
-//     }
-
-//     // 3️⃣ Insert User
-//     // await client.query(
-//     //   `INSERT INTO users 
-//     //   (usercode, fullname, username, password, email, mobile, status, roleid)
-//     //   VALUES (
-//     //     COALESCE((SELECT MAX(usercode) FROM users), 0) + 1,
-//     //     $1, $2, $3, $4, $5,
-//     //     1,  -- 1 = Active
-//     //     $6
-//     //   )`,
-//     //   [fullname, username, password, email, mobile, roleid]
-//     // );
-//     await client.query(
-//   `
-//   INSERT INTO users 
-//   (usercode, fullname, username, password, email, mobile, status, roleid)
-//   SELECT 
-//     COALESCE(MAX(usercode), 0) + 1,
-//     $1, $2, $3, $4, $5,
-//     1,
-//     $6
-//   FROM users
-//   `,
-//   [fullname, username, password, email, mobile, roleid]
-// );
-//     await client.query("COMMIT");
-
-//     return { message: "User created successfully" };
-
-//   } catch (error) {
-//     await client.query("ROLLBACK");
-//     throw error;
-//   } finally {
-//     client.release();
-//   }
-// };
-
-// const bcrypt = require("bcrypt");
-
-// const bcrypt = require("bcrypt");
-
 const addUser = async (userData) => {
   const { fullname, username, password, email, mobile, role } = userData;
   const client = await pool.connect();
@@ -228,8 +156,144 @@ const addUser = async (userData) => {
     client.release();
   }
 };
+
+const editUser = async (userData) => {
+  const { usercode, fullname, username, password, email, mobile, role, status } = userData;
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // 1️⃣ Check if user exists
+    const userCheck = await client.query(
+      `SELECT 1 FROM users WHERE usercode = $1`,
+      [usercode]
+    );
+
+    if (userCheck.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
+    // 2️⃣ Check duplicate email (exclude current user)
+    const emailCheck = await client.query(
+      `SELECT 1 FROM users 
+       WHERE email = $1 AND usercode != $2`,
+      [email, usercode]
+    );
+
+    if (emailCheck.rows.length > 0) {
+      throw new Error("Email already exists");
+    }
+
+    // 3️⃣ Convert status
+    const statusValue = status === "Inactive" ? 2 : 1;
+
+    // 4️⃣ Get roleid
+    let roleResult = await client.query(
+      `SELECT roleid FROM userRoles WHERE rolename = $1`,
+      [role]
+    );
+
+    let roleid;
+
+    if (roleResult.rows.length === 0) {
+      const insertRole = await client.query(
+        `INSERT INTO userRoles (rolename)
+         VALUES ($1)
+         RETURNING roleid`,
+        [role]
+      );
+      roleid = insertRole.rows[0].roleid;
+    } else {
+      roleid = roleResult.rows[0].roleid;
+    }
+
+    // 5️⃣ Hash password only if provided
+    let hashedPassword = null;
+
+    if (password && password.trim() !== "") {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    // 6️⃣ Update query
+    if (hashedPassword) {
+      await client.query(
+        `UPDATE users
+         SET fullname = $1,
+             username = $2,
+             password = $3,
+             email = $4,
+             mobile = $5,
+             status = $6,
+             roleid = $7,
+             updated_at = NOW()
+         WHERE usercode = $8`,
+        [fullname, username, hashedPassword, email, mobile, statusValue, roleid, usercode]
+      );
+    } else {
+      await client.query(
+        `UPDATE users
+         SET fullname = $1,
+             username = $2,
+             email = $3,
+             mobile = $4,
+             status = $5,
+             roleid = $6,
+             updated_at = NOW()
+         WHERE usercode = $7`,
+        [fullname, username, email, mobile, statusValue, roleid, usercode]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    return { message: "User updated successfully" };
+
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+const deleteUser = async (usercode) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // 1️⃣ Check if user exists
+    const userCheck = await client.query(
+      `SELECT 1 FROM users WHERE usercode = $1`,
+      [usercode]
+    );
+
+    if (userCheck.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
+    // 2️⃣ Delete user permanently
+    await client.query(
+      `DELETE FROM users WHERE usercode = $1`,
+      [usercode]
+    );
+
+    await client.query("COMMIT");
+
+    return { message: "User deleted permanently" };
+
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
 module.exports = {
   createPendingUser,
   getAllUsers,
-  addUser
+  addUser,
+  editUser,
+  deleteUser
 };

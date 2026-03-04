@@ -22,10 +22,50 @@ function Toast({ toasts, removeToast }) {
   )
 }
 
+// ── Confirm Dialog Component ─────────────────────────
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <div className="modal__overlay" onClick={onCancel}>
+      <div
+        className="modal__panel"
+        style={{ maxWidth: '420px' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="modal__header">
+          <div className="modal__headerLeft">
+            <div className="modal__headerIconWrap">🗑️</div>
+            <div>
+              <h2 className="modal__title">Delete User</h2>
+              <p className="modal__subtitle">This action cannot be undone</p>
+            </div>
+          </div>
+          <button className="modal__closeBtn" onClick={onCancel}>✕</button>
+        </div>
+        <div className="modal__body" style={{ padding: '20px 24px' }}>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-secondary, #aaa)' }}>
+            {message}
+          </p>
+        </div>
+        <div className="modal__footer">
+          <button className="modal__cancelBtn" onClick={onCancel}>Cancel</button>
+          <button
+            className="modal__submitBtn"
+            style={{ background: '#e05c5c' }}
+            onClick={onConfirm}
+          >
+            Yes, Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Modal Component ──────────────────────────────────
 function UserModal({ mode, userData, onClose, onSubmit }) {
   const isEdit = mode === 'edit'
   const [form, setForm] = useState({
+    usercode: userData?.usercode ?? userData?.id ?? userData?.user_id ?? null,
     fullname: userData?.fullname || '',
     username: userData?.username || '',
     password: '',
@@ -64,7 +104,6 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
   return (
     <div className="modal__overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal__panel">
-        {/* Header */}
         <div className="modal__header">
           <div className="modal__headerLeft">
             <div className="modal__headerIconWrap">
@@ -80,11 +119,9 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
           <button className="modal__closeBtn" onClick={onClose}>✕</button>
         </div>
 
-        {/* Body */}
         <div className="modal__body">
-          <div className="modal__grid">
+          <div className="modal__grid" autoComplete="off">
 
-            {/* Full Name */}
             <div className="modal__field">
               <label className="modal__label">Full Name <span className="modal__required">*</span></label>
               <input
@@ -93,11 +130,13 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
                 placeholder="e.g. John Doe"
                 value={form.fullname}
                 onChange={e => handleChange('fullname', e.target.value)}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               {errors.fullname && <span className="modal__fieldError">{errors.fullname}</span>}
             </div>
 
-            {/* Username */}
             <div className="modal__field">
               <label className="modal__label">Username <span className="modal__required">*</span></label>
               <input
@@ -107,11 +146,13 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
                 value={form.username}
                 onChange={e => handleChange('username', e.target.value)}
                 disabled={isEdit}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               {errors.username && <span className="modal__fieldError">{errors.username}</span>}
             </div>
 
-            {/* Password */}
             <div className="modal__field">
               <label className="modal__label">
                 Password {!isEdit && <span className="modal__required">*</span>}
@@ -123,11 +164,13 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
                 placeholder={isEdit ? '••••••••' : 'Enter password'}
                 value={form.password}
                 onChange={e => handleChange('password', e.target.value)}
+                autoComplete="new-password"
+                data-lpignore="true"
+                data-form-type="other"
               />
               {errors.password && <span className="modal__fieldError">{errors.password}</span>}
             </div>
 
-            {/* Phone */}
             <div className="modal__field">
               <label className="modal__label">Phone Number</label>
               <input
@@ -136,11 +179,13 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
                 placeholder="e.g. 9876543210"
                 value={form.mobile}
                 onChange={e => handleChange('mobile', e.target.value)}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               {errors.mobile && <span className="modal__fieldError">{errors.mobile}</span>}
             </div>
 
-            {/* Email — full width */}
             <div className="modal__field modal__field--full">
               <label className="modal__label">Email <span className="modal__required">*</span></label>
               <input
@@ -149,11 +194,13 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
                 placeholder="e.g. john@example.com"
                 value={form.email}
                 onChange={e => handleChange('email', e.target.value)}
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
               />
               {errors.email && <span className="modal__fieldError">{errors.email}</span>}
             </div>
 
-            {/* Role */}
             <div className="modal__field">
               <label className="modal__label">User Role</label>
               <div className="modal__selectWrapper">
@@ -170,7 +217,6 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
               </div>
             </div>
 
-            {/* Status — edit only */}
             {isEdit && (
               <div className="modal__field">
                 <label className="modal__label">Status</label>
@@ -204,7 +250,6 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="modal__footer">
           <button className="modal__cancelBtn" onClick={onClose}>Cancel</button>
           <button
@@ -230,10 +275,14 @@ export default function Users() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalUsers, setTotalUsers] = useState(0)   // ← total count from server
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = sessionStorage.getItem('usersPage')
+    return saved ? parseInt(saved, 10) : 1
+  })
+  const [totalUsers, setTotalUsers] = useState(0)
   const [modal, setModal] = useState(null)
   const [toasts, setToasts] = useState([])
+  const [confirmDelete, setConfirmDelete] = useState(null) // { usercode, username }
   const navigate = useNavigate()
 
   const totalPages = Math.ceil(totalUsers / RECORDS_PER_PAGE)
@@ -251,24 +300,34 @@ export default function Users() {
     else navigate('/')
   }, [navigate])
 
-  // ── Fetch a specific page from the server ──────────
+  useEffect(() => {
+    sessionStorage.setItem('usersPage', currentPage)
+  }, [currentPage])
+
+  const parseResponse = async (response) => {
+    try {
+      return await response.json()
+    } catch {
+      throw new Error('Unexpected server error. Please try again.')
+    }
+  }
+
+  // ── Fetch Users ───────────────────────────────────
   const fetchUsers = async (page = 1) => {
     try {
       setLoading(true)
       setError(null)
-      const token = localStorage.getItem('token')
       const response = await fetch('http://localhost:5000/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'getAllUsers', page, limit: RECORDS_PER_PAGE })
       })
-      if (!response.ok) throw new Error(`Failed to fetch users: ${response.status}`)
-      const data = await response.json()
+      const data = await parseResponse(response)
       if (data.success) {
         setUsers(data.users)
-        setTotalUsers(data.total)           // ← use server total
+        setTotalUsers(data.total)
       } else {
-        throw new Error('Server returned unsuccessful response')
+        throw new Error(data.message || 'Failed to load users')
       }
     } catch (err) {
       setError(err.message)
@@ -277,10 +336,9 @@ export default function Users() {
     }
   }
 
-  // Re-fetch whenever currentPage changes
   useEffect(() => {
     fetchUsers(currentPage)
-  }, [currentPage])   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page)
@@ -289,80 +347,112 @@ export default function Users() {
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    sessionStorage.removeItem('usersPage')
     navigate('/')
   }
 
+  // ── Add User ──────────────────────────────────────
   const handleAddSubmit = async (form) => {
-  try {
-    const token = localStorage.getItem('token')
-    const response = await fetch('http://localhost:5000/add-user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({
-        fullname: form.fullname,
-        username: form.username,
-        password: form.password,
-        email: form.email,
-        mobile: form.mobile,
-        role: form.role,
-      })
-    })
-    if (!response.ok) throw new Error('Failed to create user')
-    const data = await response.json()
-    if (data.success) {
-      setModal(null)
-      addToast(`User "${form.username}" created successfully!`, 'success')
-      fetchUsers(currentPage)
-    } else throw new Error(data.message || 'Failed to create user')
-  } catch (err) {
-    addToast(err.message, 'error')
-  }
-}
-  const handleEditSubmit = async (form) => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/users/${form.username}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(form)
+      const response = await fetch('http://localhost:5000/add-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullname: form.fullname,
+          username: form.username,
+          password: form.password,
+          email: form.email,
+          mobile: form.mobile,
+          role: form.role,
+        })
       })
-      if (!response.ok) throw new Error('Failed to update user')
-      // Optimistically update the current page's list
-      setUsers(prev => prev.map(u =>
-        u.username === form.username ? { ...u, ...form, updated_at: new Date().toISOString() } : u
-      ))
-      setModal(null)
-      addToast(`User "${form.username}" updated successfully!`, 'success')
+      const data = await parseResponse(response)
+      if (data.success) {
+        setModal(null)
+        addToast(`User "${form.username}" created successfully!`, 'success')
+        fetchUsers(currentPage)
+      } else {
+        addToast(data.message || 'Failed to create user', 'error')
+      }
     } catch (err) {
       addToast(err.message, 'error')
     }
   }
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        const token = localStorage.getItem('token')
-        const response = await fetch(`http://localhost:5000/users/${userId}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (!response.ok) throw new Error('Failed to delete user')
+  // ── Edit User ─────────────────────────────────────
+  const handleEditSubmit = async (form) => {
+    try {
+      const usercode = form.usercode
+      if (!usercode) {
+        addToast('Unable to identify user — usercode missing. Please refresh and try again.', 'error')
+        return
+      }
 
+      const payload = {
+        usercode,
+        fullname: form.fullname,
+        username: form.username,
+        email: form.email,
+        mobile: form.mobile,
+        role: form.role,
+        status: form.status.charAt(0).toUpperCase() + form.status.slice(1).toLowerCase(),
+        password: form.password || '',
+      }
+
+      const response = await fetch('http://localhost:5000/update-user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await parseResponse(response)
+      if (data.success) {
+        setUsers(prev => prev.map(u =>
+          u.username === form.username
+            ? { ...u, ...form, status: payload.status, updated_at: new Date().toISOString() }
+            : u
+        ))
+        setModal(null)
+        addToast(data.message || `User "${form.username}" updated successfully!`, 'success')
+      } else {
+        addToast(data.message || 'Failed to update user', 'error')
+      }
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }
+
+  // ── Delete — step 1: show confirm dialog ─────────
+  const handleDeleteClick = (userItem) => {
+    setConfirmDelete({ usercode: userItem.usercode, username: userItem.username })
+  }
+  // ── Delete — step 2: confirmed, call API ──────────
+  const handleDeleteConfirm = async () => {
+    const { usercode, username } = confirmDelete
+    setConfirmDelete(null)
+
+    try {
+      const response = await fetch('http://localhost:5000/delete-user', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usercode })
+      })
+      const data = await parseResponse(response)
+      if (data.success) {
+        addToast(data.message || `User "${username}" deleted successfully.`, 'success')
+        // Recalculate target page after deletion
         const newTotal = totalUsers - 1
         const newTotalPages = Math.ceil(newTotal / RECORDS_PER_PAGE)
-        // If we deleted the last item on the last page, step back one page
         const targetPage = currentPage > newTotalPages ? Math.max(1, newTotalPages) : currentPage
-
-        addToast(`User "${userId}" deleted.`, 'success')
-
         if (targetPage !== currentPage) {
-          setCurrentPage(targetPage) // useEffect will trigger fetchUsers
+          setCurrentPage(targetPage) // triggers useEffect → fetchUsers
         } else {
-          fetchUsers(currentPage)    // same page, re-fetch manually
+          fetchUsers(currentPage)    // same page, re-fetch
         }
-      } catch (err) {
-        addToast(err.message, 'error')
+      } else {
+        addToast(data.message || 'Failed to delete user', 'error')
       }
+    } catch (err) {
+      addToast(err.message, 'error')
     }
   }
 
@@ -375,7 +465,6 @@ export default function Users() {
 
   if (!user) return null
 
-  // Build visible page numbers (show max 5 around current page)
   const getPageNumbers = () => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
     const pages = []
@@ -394,6 +483,15 @@ export default function Users() {
       <div className="dash__bg" />
 
       <Toast toasts={toasts} removeToast={removeToast} />
+
+      {/* Confirm Delete Dialog */}
+      {confirmDelete && (
+        <ConfirmDialog
+          message={`Are you sure you want to permanently delete "${confirmDelete.username}"? This action cannot be undone.`}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
 
       {modal && (
         <UserModal
@@ -468,7 +566,7 @@ export default function Users() {
                               >✏️</button>
                               <button
                                 className="users__deleteBtn"
-                                onClick={() => handleDeleteUser(userItem.username)}
+                                onClick={() => handleDeleteClick(userItem)}
                                 title="Delete user"
                               >🗑️</button>
                             </div>

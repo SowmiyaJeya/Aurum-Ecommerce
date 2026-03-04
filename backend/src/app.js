@@ -11,8 +11,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use("/", authRoutes); 
 app.use("/add-users",authRoutes)
-
-
+app.use("/update-user",authRoutes)
+app.use("delete-user",authRoutes)
 
 setInterval(() => {
   checkTelegramUpdates();
