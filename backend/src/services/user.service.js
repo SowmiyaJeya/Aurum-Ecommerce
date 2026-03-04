@@ -59,12 +59,21 @@ const getAllUsers = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
 
   const dataQuery = await pool.query(
-    `SELECT usercode,fullname, username, email, mobile, updated_at 
-     FROM users
-     ORDER BY updated_at desc
+    `SELECT 
+        u.usercode,
+        u.fullname,
+        u.username,
+        u.email,
+        u.mobile,
+        u.status,
+        r.rolename AS role,
+        u.updated_at
+     FROM users u
+     LEFT JOIN userRoles r 
+        ON u.roleid = r.roleid
+     ORDER BY u.updated_at DESC
      LIMIT $1 OFFSET $2`,
     [limit, offset]
-    
   );
 
   const countQuery = await pool.query(
