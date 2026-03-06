@@ -307,7 +307,7 @@ export default function Categories() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id:            modal.category.id,
-        //   category_name: data.name,
+          category_name: data.name,
           status:        data.status,
         }),
       })
@@ -482,7 +482,19 @@ export default function Categories() {
         {modal?.type === 'delete' && <DeleteModal   category={modal.category} onClose={closeModal} onConfirm={handleDelete} loading={saving} />}
 
         {/* Toasts */}
-        <div className="toast__container">
+        <div className="toast__container" style={{
+                position: 'fixed',
+                top: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                bottom: 'auto',
+                right: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 10,
+                zIndex: 9999,
+              }}>
           {toasts.map(t => (
             <div key={t.id} className={`toast toast--${t.type}`}>
               <span className="toast__icon">{TOAST_ICONS[t.type]}</span>

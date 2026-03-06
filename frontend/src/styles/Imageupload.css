@@ -1,0 +1,232 @@
+/* ── Image Upload ──────────────────────────────────────── */
+/* Paste these rules into your Products.css file           */
+
+.imgUpload__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 22px 20px;
+  border: 1.5px dashed var(--border-dark, #d0d0d8);
+  border-radius: 10px;
+  background: var(--surface-2, #f9f9fb);
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.imgUpload__dropzone:hover,
+.imgUpload__dropzone--active {
+  border-color: var(--accent, #2e6f5e);
+  background: color-mix(in srgb, var(--accent, #2e6f5e) 5%, transparent);
+}
+
+.imgUpload__icon {
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: 2px;
+  opacity: 0.55;
+}
+
+.imgUpload__hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.imgUpload__hintLink {
+  color: var(--accent, #2e6f5e);
+  font-weight: 600;
+}
+
+.imgUpload__sub {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-muted, #aaa);
+}
+
+/* ── Preview state ─────────────────────────────────────── */
+.imgUpload__preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border-dark, #d0d0d8);
+  border-radius: 10px;
+  background: var(--surface-2, #f9f9fb);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.imgUpload__previewImg {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border, #e4e4ea);
+}
+
+.imgUpload__previewOverlay {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+}
+
+/* ── Shared button base — inherits nothing from browser defaults ── */
+.imgUpload__changeBtn,
+.imgUpload__removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  border: none;
+  outline: none;
+  transition: opacity 0.15s, filter 0.15s;
+}
+
+/* Change — mirrors modal__cancelBtn (outlined, neutral) */
+.imgUpload__changeBtn {
+  background: var(--surface, #fff);
+  color: var(--text-secondary, #555);
+  box-shadow: inset 0 0 0 1.5px var(--border-dark, #d0d0d8);
+}
+
+.imgUpload__changeBtn:hover {
+  box-shadow: inset 0 0 0 1.5px var(--accent, #2e6f5e);
+  color: var(--accent, #2e6f5e);
+}
+
+/* Remove — mirrors modal danger submit (solid red fill) */
+.imgUpload__removeBtn {
+  background: var(--danger, #b94a48);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(185, 74, 72, 0.25);
+}
+
+.imgUpload__removeBtn:hover {
+  filter: brightness(1.08);
+}
+
+.imgUpload__fileName {
+  font-size: 0.78rem;
+  color: var(--text-muted, #aaa);
+  margin-left: auto;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Thumbnail grid */
+.imgUpload__thumbGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Individual thumbnail */
+.imgUpload__thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.imgUpload__thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* "Primary" badge on first image */
+.imgUpload__primaryBadge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 2px 0;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Remove button on each thumbnail */
+.imgUpload__thumbRemove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+
+.imgUpload__thumb:hover .imgUpload__thumbRemove {
+  opacity: 1;
+}
+
+/* "Add more" slot inside the grid */
+.imgUpload__thumbAdd {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.imgUpload__thumbAdd:hover {
+  border-color: var(--accent, #6c6cff);
+  color: var(--accent, #6c6cff);
+  background: var(--surface-2, #f5f5ff);
+}
+
+.imgUpload__thumbAddIcon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.imgUpload__thumbAddLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+}

@@ -10,19 +10,6 @@
   line-height: 1.4;
 }
 
-/* ── SKU monospace chip ─────────────────────────────────── */
-.products__sku {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  background: var(--surface-alt);
-  border: 1px solid var(--border-light);
-  border-radius: 5px;
-  padding: 0.18rem 0.5rem;
-  white-space: nowrap;
-  letter-spacing: 0.03em;
-}
-
 /* ── Price ──────────────────────────────────────────────── */
 .products__price {
   font-weight: 600;
@@ -68,26 +55,27 @@
   flex-shrink: 0;
 }
 
-.badge--active {
+.products__badge--active {
   background: #edfaf4;
   color: #1e7e4e;
   border: 1px solid rgba(30, 126, 78, 0.2);
 }
-.badge--active::before { background: #1e7e4e; }
+.products__badge--active::before { background: #1e7e4e; }
 
-.badge--draft {
-  background: #fef9ec;
-  color: #9a6c00;
-  border: 1px solid rgba(154, 108, 0, 0.2);
+.products__badge--inactive {
+  background: #fdf2f2;
+  color: #b94a48;
+  border: 1px solid rgba(185, 74, 72, 0.2);
 }
-.badge--draft::before { background: #c9870a; }
+.products__badge--inactive::before { background: #b94a48; }
 
-.badge--archived {
-  background: var(--surface-alt);
+/* ── Last updated cell ──────────────────────────────────── */
+.products__updatedAt {
+  font-size: 0.85rem;
   color: var(--text-muted);
-  border: 1px solid var(--border-light);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.badge--archived::before { background: var(--text-muted); }
 
 /* ── Empty state ────────────────────────────────────────── */
 .products__empty {
@@ -119,29 +107,6 @@
   margin: 0;
   line-height: 1.5;
 }
-
-/* ── Modal: status radio overrides for 3-way ────────────── */
-.modal__radioLabel--status-active {
-  background: #edfaf4;
-  border-color: rgba(30, 126, 78, 0.3);
-  color: #1e7e4e;
-}
-
-.modal__radioLabel--status-draft {
-  background: #fef9ec;
-  border-color: rgba(154, 108, 0, 0.25);
-  color: #9a6c00;
-}
-
-.modal__radioLabel--status-archived {
-  background: var(--surface-alt);
-  border-color: var(--border);
-  color: var(--text-muted);
-}
-
-.modal__radioDot--status-active   { background: #1e7e4e; }
-.modal__radioDot--status-draft    { background: #c9870a; }
-.modal__radioDot--status-archived { background: var(--text-muted); }
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {
