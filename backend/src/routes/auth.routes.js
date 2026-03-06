@@ -14,6 +14,8 @@ router.post("/add-user", addUserController);
 router.put("/update-user", editUserController);
 router.delete("/delete-user",deleteUserController);
 
+
+
 router.post('/cancel-pending', async (req, res) => {
   const { email } = req.body
   await pool.query('DELETE FROM users WHERE email = $1', [email])

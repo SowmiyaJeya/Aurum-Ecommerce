@@ -294,13 +294,27 @@ export default function Users() {
     try {
       const res = await fetch('http://localhost:5000/add-user', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullname: form.fullname, username: form.username, password: form.password, email: form.email, mobile: form.mobile, role: form.role })
+        body: JSON.stringify({ fullname: form.fullname, username: form.username, password: form.password, email: form.email, mobile: form.mobile, role: form.role,maker_id: user.usercode })
       })
       const data = await parseResponse(res)
       if (data.success) { setModal(null); addToast(`User "${form.username}" created successfully!`, 'success'); fetchUsers(currentPage) }
       else addToast(data.message || 'Failed to create user', 'error')
     } catch (err) { addToast(err.message, 'error') }
   }
+
+  // const handleEditSubmit = async (form) => {
+  //   try {
+  //     if (!form.usercode) { addToast('Unable to identify user — usercode missing.', 'error'); return }
+  //     const statusNumeric = form.status === 'active' ? 1 : 2
+  //     const payload = { usercode: form.usercode, fullname: form.fullname, username: form.username, email: form.email, mobile: form.mobile, role: form.role, status: statusNumeric, password: form.password || '' }
+  //     const res = await fetch('http://localhost:5000/update-user', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+  //     const data = await parseResponse(res)
+  //     if (data.success) {
+  //       setUsers(prev => prev.map(u => u.username === form.username ? { ...u, ...form, status: statusNumeric, updated_at: new Date().toISOString() } : u))
+  //       setModal(null); addToast(data.message || `User "${form.username}" updated successfully!`, 'success')
+  //     } else addToast(data.message || 'Failed to update user', 'error')
+  //   } catch (err) { addToast(err.message, 'error') }
+  // }
 
   const handleEditSubmit = async (form) => {
     try {
@@ -310,12 +324,12 @@ export default function Users() {
       const res = await fetch('http://localhost:5000/update-user', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await parseResponse(res)
       if (data.success) {
-        setUsers(prev => prev.map(u => u.username === form.username ? { ...u, ...form, status: statusNumeric, updated_at: new Date().toISOString() } : u))
-        setModal(null); addToast(data.message || `User "${form.username}" updated successfully!`, 'success')
+        setModal(null)
+        addToast(data.message || `User "${form.username}" updated successfully!`, 'success')
+        fetchUsers(currentPage)   // ← add this, remove the setUsers optimistic update
       } else addToast(data.message || 'Failed to update user', 'error')
     } catch (err) { addToast(err.message, 'error') }
   }
-
   const handleDeleteClick = (userItem) => setConfirmDelete({ usercode: userItem.usercode, username: userItem.username })
 
   const handleDeleteConfirm = async () => {
@@ -433,7 +447,16 @@ export default function Users() {
                         <td><RoleBadge role={u.role || 'User'} /></td>
                         <td><StatusBadge status={u.status} /></td>
                         <td style={{ color: 'var(--text-muted)', fontSize: '0.97rem' }}>{u.mobile || '—'}</td>
-                        <td style={{ fontSize: '0.95rem' }}>{formatDate(u.updated_at)}</td>
+                        <td style={{ fontSize: '0.95rem' }}>
+                          {u.maker_name && (
+                            <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.93rem' }}>
+                             Updated by:  {u.maker_name}
+                            </div>
+                          )}
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                            {formatDate(u.updated_at)}
+                          </div>
+                        </td>
                         <td>
                           <div className="users__actionBtns">
                             <button className="users__editBtn" onClick={() => setModal({ mode: 'edit', userData: u })} title="Edit user">✏️</button>
@@ -485,11 +508,11 @@ export default function Users() {
             <button className="dash__menuItem active" onClick={() => navigate('/users')}>
               <span className="dash__menuIcon">⬡</span><span className="dash__menuLabel">Users</span><span className="dash__activeDot" />
             </button>
-            <button className="dash__menuItem" onClick={() => navigate('/tasks')}>
-              <span className="dash__menuIcon">◈</span><span className="dash__menuLabel">Tasks</span>
+            <button className="dash__menuItem" onClick={() => navigate('/category')}>
+              <span className="dash__menuIcon">◎</span><span className="dash__menuLabel">Category</span>
             </button>
-            <button className="dash__menuItem" onClick={() => navigate('/analytics')}>
-              <span className="dash__menuIcon">◎</span><span className="dash__menuLabel">Analytics</span>
+            <button className="dash__menuItem" onClick={() => navigate('/products')}>
+              <span className="dash__menuIcon">◈</span><span className="dash__menuLabel">Products</span>
             </button>
             <button className="dash__menuItem" onClick={() => navigate('/settings')}>
               <span className="dash__menuIcon">◇</span><span className="dash__menuLabel">Settings</span>

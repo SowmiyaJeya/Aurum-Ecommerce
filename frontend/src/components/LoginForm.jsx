@@ -2,7 +2,35 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Toast from './Toast'
 import '../styles/Auth.css'
+// import { useEffect } from "react";
+import { toast } from "react-toastify";
+// import toast, { Toaster } from "react-hot-toast";
+import { useSearchParams } from "react-router-dom";
+import { startIdleTimer } from "../utils/idleTimer"
 
+// const handlesubmit = async (e) => {
+
+//   e.preventDefault()
+
+//   try {
+
+//     const response = await axios.post("/api/login", {
+//       username,
+//       password
+//     })
+
+//     if (response.data.success) {
+
+//       startIdleTimer()   // 🔥 start timer after login
+
+//       navigate("/dashboard")
+
+//     }
+
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }
 function validate(form) {
   const errors = {}
 
@@ -25,7 +53,7 @@ export default function LoginForm({ onSwitchToRegister }) {
   const [errors, setErrors] = useState({})
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [toast, setToast]   = useState(null) // { type, title, message }
+  const [activeToast, setActiveToast] = useState(null) // { type, title, message }
 
   const setField = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -33,7 +61,7 @@ export default function LoginForm({ onSwitchToRegister }) {
   }
 
   const showToast = (type, title, message) => {
-    setToast({ type, title, message })
+    setActiveToast({ type, title, message })
   }
 
   const handleSubmit = async (e) => {
@@ -75,14 +103,14 @@ export default function LoginForm({ onSwitchToRegister }) {
       }
 
       // ✅ Success
-      // Save token/user info if returned
+      startIdleTimer() // 🔥 start session idle timer
       if (data.token) localStorage.setItem('token', data.token)
       if (data.user)  localStorage.setItem('user', JSON.stringify(data.user))
 
       showToast('success', '👋 Welcome back!', `Logged in as ${form.username}. Redirecting...`)
 
       setTimeout(() => {
-        navigate('/dashboard')
+        navigate('/users')
       }, 1500)
 
     } catch (err) {
@@ -95,12 +123,12 @@ export default function LoginForm({ onSwitchToRegister }) {
 
   return (
     <>
-      {toast && (
+      {activeToast && (
         <Toast
-          title={toast.title}
-          message={toast.message}
-          type={toast.type}
-          onHide={() => setToast(null)}
+          title={activeToast.title}
+          message={activeToast.message}
+          type={activeToast.type}
+          onHide={() => setActiveToast(null)}
         />
       )}
 

@@ -137,21 +137,21 @@ exports.verifyOtpAndRegister = async (req, res) => {
 
     // 1️⃣ Insert into otps table
     await pool.query(
-      `INSERT INTO otps (user_id, otp, verified_at)
+      `INSERT INTO otps (usercode , otp, verified_at)
        VALUES ($1, $2, NOW())`,
-      [user.id, otp]
+      [user.usercode, otp]
     );
 
-    // 2️⃣ Update users table
-    await pool.query(
-      `UPDATE users
-       SET status = 'active',
-           otp = NULL,
-           otp_expires = NULL,
-           telegram_token = NULL
-       WHERE id = $1`,
-      [user.id]
-    );
+    // // 2️⃣ Update users table
+    // await pool.query(
+    //   `UPDATE users
+    //    SET status = 'active',
+    //        otp = NULL,
+    //        otp_expires = NULL,
+    //        telegram_token = NULL
+    //    WHERE usercode  = $1`,
+    //   [user.usercode]
+    // );
 
     await pool.query("COMMIT");
 
@@ -171,7 +171,7 @@ exports.verifyOtpAndRegister = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-
+    
     if (!username || !password) {
       return res.status(400).json({
         message: "Username and password required",
@@ -208,15 +208,18 @@ exports.login = async (req, res) => {
       });
     }
 
-    // ✅ Login success
+   // ✅ STORE USER IN SESSION (VERY IMPORTANT)
+    req.session.usercode = user.usercode;
+
     return res.status(200).json({
       message: "Login successful",
       user: {
-        id: user.id,
+        usercode: user.usercode,
         username: user.username,
         email: user.email,
       },
     });
+
 
   } catch (error) {
     console.error("Login error:", error);
@@ -251,18 +254,90 @@ exports.handleUserActions = async (req, res) => {
   }
 };
 
+// exports.addUserController = async (req, res) => {
+//   try {
+//     const { fullname, username, password, email, mobile, role } = req.body;
+
+//     if (!fullname || !username || !password || !email || !mobile || !role) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "All fields are required"
+//       });
+//     }
+
+//     const result = await addUser(req.body);
+
+//     return res.status(201).json({
+//       success: true,
+//       message: result.message
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+//   }
+// };
+
+// exports.addUserController = async (req, res) => {
+//   try {
+//     const { fullname, username, password, email, mobile, role } = req.body;
+
+//     if (!fullname || !username || !password || !email || !mobile || !role) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "All fields are required"
+//       });
+//     }
+
+//     // ✅ Get maker_id from session
+//     const maker_id = req.session.usercode;
+//     console.log("SESSION:", req.session);
+//     if (!maker_id) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "User not logged in"
+//       });
+//     }
+
+//     const result = await addUser({
+//       ...req.body,
+//       maker_id
+//     });
+
+//     return res.status(201).json({
+//       success: true,
+//       message: result.message
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+//   }
+// };
 exports.addUserController = async (req, res) => {
   try {
-    const { fullname, username, password, email, mobile, role } = req.body;
+    const { fullname, username, password, email, mobile, role, maker_id } = req.body;
 
-    if (!fullname || !username || !password || !email || !mobile || !role) {
+    if (!fullname || !username || !password || !email || !mobile || !role || !maker_id) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required"
+        message: "All fields including maker_id are required"
       });
     }
 
-    const result = await addUser(req.body);
+    const result = await addUser({
+      fullname,
+      username,
+      password,
+      email,
+      mobile,
+      role,
+      maker_id
+    });
 
     return res.status(201).json({
       success: true,

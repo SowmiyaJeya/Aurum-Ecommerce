@@ -4,8 +4,9 @@
 .dash {
   position: relative;
   width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #f7f5f0;
   font-family: 'DM Sans', sans-serif;
 }
@@ -27,62 +28,68 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 32px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(247, 245, 240, 0.85);
-  backdrop-filter: blur(10px);
+  padding: 22px 40px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  background: rgba(247, 245, 240, 0.92);
+  backdrop-filter: blur(12px);
 }
 
 .dash__brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .dash__gem {
-  font-size: 18px;
+  font-size: 20px;
   color: #1a7a5e;
 }
 
 .dash__brandName {
   font-family: 'Syne', sans-serif;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.4px;
 }
 
 .dash__userPill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
+  gap: 10px;
+  padding: 8px 18px;
   background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.09);
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .dash__userDot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #1a7a5e;
 }
 
-/* ── Main empty canvas ── */
+/* ── Main content area ── */
 .dash__main {
   flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  margin-right: 0;  /* Changed from default */
-  transition: margin-right 0.2s ease;
-  min-height: 100vh;
+  padding: 28px;
+  overflow: visible;
+  min-height: calc(100vh - 66px);
   width: 100%;
   box-sizing: border-box;
+  padding-bottom: 3rem;
+  transition: margin-right 0.25s ease;
 }
+
+.dash__menuTrigger.open ~ .dash__main {
+  margin-right: 300px;
+}
+
 /* ── Right hover menu container ── */
 .dash__menuTrigger {
   position: fixed;
@@ -95,45 +102,46 @@
   justify-content: flex-end;
 }
 
-.dash__menuTrigger.open ~ .dash__main {
-  margin-right: 260px;  /* Match flyout width */
-}
-
-
 /* ── Always-visible pill ── */
 .dash__pill {
   position: relative;
   z-index: 2;
-  width: 28px;
-  height: 72px;
+  width: 34px;
+  height: 88px;
   background: #1a7a5e;
-  border-radius: 12px 0 0 12px;
+  border-radius: 14px 0 0 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: -4px 0 20px rgba(26, 122, 94, 0.25);
-  transition: width 0.2s ease, background 0.2s ease;
+  box-shadow: -6px 0 24px rgba(26, 122, 94, 0.30);
+  transition: width 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dash__pill:hover {
+  background: #1d8a6a;
+  box-shadow: -8px 0 30px rgba(26, 122, 94, 0.40);
 }
 
 .dash__menuTrigger.open .dash__pill {
   background: #155f49;
-  width: 32px;
+  width: 38px;
+  box-shadow: -6px 0 28px rgba(26, 122, 94, 0.35);
 }
 
 .dash__pillDots {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .dash__pillDots span {
   display: block;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   transition: transform 0.2s ease;
 }
 
@@ -143,12 +151,12 @@
 /* ── Flyout panel ── */
 .dash__flyout {
   position: absolute;
-  right: 28px;
+  right: 34px;
   top: 50%;
-  transform: translateY(-50%) translateX(12px);
+  transform: translateY(-50%) translateX(16px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dash__menuTrigger.open .dash__flyout {
@@ -159,12 +167,26 @@
 
 .dash__flyoutInner {
   background: #fff;
-  border-radius: 16px 0 0 16px;
-  padding: 12px 0;
-  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12), -2px 0 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 18px 0 0 18px;
+  padding: 16px 0;
+  box-shadow:
+    -12px 0 48px rgba(0, 0, 0, 0.13),
+    -3px 0 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+  border: 1px solid rgba(0,0,0,0.07);
   border-right: none;
-  min-width: 180px;
+  min-width: 240px;
+}
+
+/* ── Section label ── */
+.dash__menuSection {
+  padding: 6px 22px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #bbb;
+  font-family: 'DM Sans', sans-serif;
 }
 
 /* ── Menu items ── */
@@ -172,26 +194,27 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
+  gap: 14px;
+  padding: 13px 22px;
   background: none;
   border: none;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
-  color: #555;
+  color: #4a4a4a;
   text-align: left;
   position: relative;
   transition: background 0.15s ease, color 0.15s ease;
   opacity: 0;
-  transform: translateX(8px);
+  transform: translateX(10px);
   animation: none;
+  line-height: 1.2;
 }
 
 .dash__menuTrigger.open .dash__menuItem {
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: calc(var(--i) * 0.05s);
+  animation: slideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 0.055s);
 }
 
 @keyframes slideIn {
@@ -202,21 +225,39 @@
 }
 
 .dash__menuItem:hover {
-  background: #f5faf8;
+  background: #f3faf7;
   color: #1a7a5e;
 }
 
 .dash__menuItem.active {
   color: #1a7a5e;
-  font-weight: 500;
-  background: #f0faf5;
+  font-weight: 600;
+  background: #edf7f2;
+}
+
+/* Active left-border accent */
+.dash__menuItem.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #1a7a5e;
 }
 
 .dash__menuIcon {
-  font-size: 15px;
-  width: 20px;
+  font-size: 17px;
+  width: 24px;
   text-align: center;
   flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.dash__menuItem.active .dash__menuIcon,
+.dash__menuItem:hover .dash__menuIcon {
+  opacity: 1;
 }
 
 .dash__menuLabel {
@@ -224,18 +265,19 @@
 }
 
 .dash__activeDot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #1a7a5e;
   flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(26, 122, 94, 0.5);
 }
 
 /* ── Divider ── */
 .dash__menuDivider {
-  margin: 8px 16px;
+  margin: 10px 18px;
   border: none;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #efefef;
 }
 
 /* ── Logout item ── */
@@ -243,60 +285,47 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
+  gap: 14px;
+  padding: 13px 22px;
   background: none;
   border: none;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: #aaa;
+  font-size: 15px;
+  font-weight: 400;
+  color: #bbb;
   text-align: left;
   transition: background 0.15s ease, color 0.15s ease;
   opacity: 0;
-  transform: translateX(8px);
+  transform: translateX(10px);
 }
 
 .dash__menuTrigger.open .dash__logoutItem {
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.22s;
+  animation: slideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.28s;
 }
 
 .dash__logoutItem:hover {
   background: #fff5f5;
-  color: #e55;
+  color: #e05555;
 }
 
+/* ── Content container ── */
 .users__container {
-  max-width: calc(100vw - 280px);  /* Prevent content from going under menu */
+  max-width: calc(100vw - 320px);
 }
 
-/* Responsive */
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .dash__menuTrigger.open ~ .dash__main {
     margin-right: 0;
   }
-  
+
   .users__container {
     max-width: 100%;
   }
+
+  .dash__topbar {
+    padding: 16px 20px;
+  }
 }
-.dash {
-  min-height: 100vh;
-  /* Remove any: overflow: hidden — replace with: */
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-/* Main content area must NOT clip its children */
-.dash__main {
-  /* Remove any fixed height or overflow: hidden */
-  overflow: visible;
-  /* Let it grow as tall as its content */
-  min-height: calc(100vh - 60px); /* adjust 60px to your topbar height */
-  padding-bottom: 3rem; /* breathing room at the bottom */
-}
-
-
-
-

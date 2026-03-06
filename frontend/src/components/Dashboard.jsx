@@ -4,8 +4,8 @@ import '../styles/Dashboard.css'
 
 const MENUS = [
   { icon: '⬡', label: 'Users',     key: 'users',    path: '/users' },
-  { icon: '◈', label: 'Tasks',     key: 'tasks',    path: '/tasks' },
-  { icon: '◎', label: 'Analytics', key: 'analytics', path: '/analytics' },
+  { icon: '◎', label: 'Category', key: 'category', path: '/category' },
+  { icon: '◈', label: 'Products',     key: 'products',    path: '/products' },
   { icon: '◇', label: 'Settings',  key: 'settings',  path: '/settings' },
 ]
 
