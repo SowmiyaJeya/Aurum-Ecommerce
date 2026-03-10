@@ -8,29 +8,6 @@ import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import { startIdleTimer } from "../utils/idleTimer"
 
-// const handlesubmit = async (e) => {
-
-//   e.preventDefault()
-
-//   try {
-
-//     const response = await axios.post("/api/login", {
-//       username,
-//       password
-//     })
-
-//     if (response.data.success) {
-
-//       startIdleTimer()   // 🔥 start timer after login
-
-//       navigate("/dashboard")
-
-//     }
-
-//   } catch (error) {
-//     console.log(error)
-//   }
-// }
 function validate(form) {
   const errors = {}
 
