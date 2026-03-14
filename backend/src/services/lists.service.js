@@ -111,14 +111,18 @@ const filterByBrand = async ({ type, brand_ids }) => {
 const filterByCategory = async ({ type, category_ids }) => {
 
   let query = `
-    SELECT *
-    FROM products
+    SELECT 
+      p.*,
+      c.category_name
+    FROM products p
+    JOIN category c 
+      ON p.category_id = c.id
   `;
 
   let values = [];
 
   if (type !== "allcategory" && category_ids) {
-    query += ` WHERE category_id = ANY($1)`;
+    query += ` WHERE p.category_id = ANY($1)`;
     values.push(category_ids);
   }
 
@@ -126,12 +130,61 @@ const filterByCategory = async ({ type, category_ids }) => {
 
   return result.rows;
 };
+
+const getProducts = async (page = 1) => {
+
+  const limit = 8;
+  const offset = (page - 1) * limit;
+
+  const dataQuery = await pool.query(
+`SELECT 
+    p.product_id,
+    p.product_name,
+    c.category_name,
+    p.price,
+    p.stock,
+    p.status,
+    p.updated_at,
+
+    (
+        SELECT JSON_AGG(pi.image_data ORDER BY pi.id DESC)
+        FROM product_images pi
+        WHERE pi.product_id = p.product_id
+    ) AS product_images,
+
+    (
+        SELECT COUNT(*)
+        FROM product_images pi
+        WHERE pi.product_id = p.product_id
+    ) AS image_count
+
+FROM products p
+LEFT JOIN category c
+ON p.category_id = c.id
+
+ORDER BY p.updated_at DESC
+LIMIT $1 OFFSET $2`,
+  [limit, offset]
+  );
+
+  const countQuery = await pool.query(
+    `SELECT COUNT(*) FROM products`
+  );
+
+  return {
+    products: dataQuery.rows,
+    total: parseInt(countQuery.rows[0].count),
+    page,
+    limit
+  };
+
+};
+
 module.exports={
     listAllCategories,
     getProductsByCategory,
     searchProducts,
     filterByPrice,
     filterByBrand,
-    filterByCategory
-    
+    getProducts
 }

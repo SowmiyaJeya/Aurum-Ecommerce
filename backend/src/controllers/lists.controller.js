@@ -245,3 +245,41 @@ exports.filterByCategoryController = async (req, res) => {
 
   }
 };
+
+exports.getAllProductsController = async (req, res) => {
+  try {
+
+    const { type, page = 1 } = req.body;
+
+    if (type !== "displayProducts") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request type"
+      });
+    }
+
+    const result = await productService.getProducts(page);
+
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      data: result.products,
+      pagination: {
+        totalRecords: result.total,
+        currentPage: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit)
+      }
+    });
+
+  } catch (error) {
+
+    console.error("Fetch Products Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error fetching products"
+    });
+
+  }
+};

@@ -9,5 +9,6 @@ router.post("/searchProducts", allController.searchProductsController);
 router.post("/filter-price", allController.filterByPriceController);
 router.post("/filter-brand", allController.filterByBrandController);
 router.post("/filter-category", allController.filterByCategoryController);
+router.post("/displayProducts",allController.getAllProductsController);
 
 module.exports = router;

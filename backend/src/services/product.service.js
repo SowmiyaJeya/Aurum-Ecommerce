@@ -59,7 +59,7 @@ const pool = require("../config/db");
 // };
 const getAllProducts = async (page = 1) => {
 
-  const limit = 8;
+  const limit = 5;
   const offset = (page - 1) * limit;
 
   const dataQuery = await pool.query(
