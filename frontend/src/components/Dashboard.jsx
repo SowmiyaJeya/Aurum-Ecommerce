@@ -6,7 +6,9 @@ const MENUS = [
   { icon: '🏷️', label: 'Brands', key: 'brands', path: '/brands' },
   { icon: '◎', label: 'Category', key: 'category', path: '/category' },
   { icon: '◈', label: 'Products', key: 'products', path: '/products' },
-  { icon: '◇', label: 'Settings', key: 'settings', path: '/settings' },
+  { icon: '🛒', label: 'Products List', key: 'lists', path: '/lists' },
+  { icon: '◇', label: 'Settings', key: 'settings', path: '/settings' }
+
 ]
 
 const styles = `

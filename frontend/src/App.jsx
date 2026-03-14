@@ -90,92 +90,96 @@
 //   )
 // }
 
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import LoginForm from './components/LoginForm'
-import RegisterForm from './components/RegisterForm'
-import Dashboard from './components/Dashboard'
-import Users from './components/Users'
-import Category from './components/Category'
-import Products from './components/Products'
-import Brand from './components/Brand'
-import './styles/Auth.css'
+  import { useState } from 'react'
+  import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+  import LoginForm from './components/LoginForm'
+  import RegisterForm from './components/RegisterForm'
+  import Dashboard from './components/Dashboard'
+  import Users from './components/Users'
+  import Category from './components/Category'
+  import Products from './components/Products'
+  import Brand from './components/Brand'
+  import ProductsList  from './components/ProductsList'
+  import './styles/Auth.css'
 
-function AuthPage() {
-  const [tab, setTab] = useState(() => sessionStorage.getItem('authTab') || 'login')
+  function AuthPage() {
+    const [tab, setTab] = useState(() => sessionStorage.getItem('authTab') || 'login')
 
-  const switchTab = (newTab) => {
-    sessionStorage.setItem('authTab', newTab)
-    setTab(newTab)
-  }
+    const switchTab = (newTab) => {
+      sessionStorage.setItem('authTab', newTab)
+      setTab(newTab)
+    }
 
-  return (
-    <div className="authPage">
-      <div className="bgBlob bgBlob1" />
-      <div className="bgBlob bgBlob2" />
-      <div className="bgBlob bgBlob3" />
-      <div className="bgGrid" />
+    return (
+      <div className="authPage">
+        <div className="bgBlob bgBlob1" />
+        <div className="bgBlob bgBlob2" />
+        <div className="bgBlob bgBlob3" />
+        <div className="bgGrid" />
 
-      <div className="card">
-        <div className="cardHeader">
-          <div className="brandRow">
-            <div className="brandGem">✦</div>
-            <span className="brandName">Aurum</span>
+        <div className="card">
+          <div className="cardHeader">
+            <div className="brandRow">
+              <div className="brandGem">✦</div>
+              <span className="brandName">Aurum</span>
+            </div>
+
+            <div className="tabRow" role="tablist">
+              <button
+                className={`tabBtn${tab === 'login' ? ' active' : ''}`}
+                onClick={() => switchTab('login')}
+                role="tab"
+                aria-selected={tab === 'login'}
+              >
+                Sign In
+              </button>
+              <button
+                className={`tabBtn${tab === 'register' ? ' active' : ''}`}
+                onClick={() => switchTab('register')}
+                role="tab"
+                aria-selected={tab === 'register'}
+              >
+                Register
+              </button>
+            </div>
           </div>
 
-          <div className="tabRow" role="tablist">
-            <button
-              className={`tabBtn${tab === 'login' ? ' active' : ''}`}
-              onClick={() => switchTab('login')}
-              role="tab"
-              aria-selected={tab === 'login'}
-            >
-              Sign In
-            </button>
-            <button
-              className={`tabBtn${tab === 'register' ? ' active' : ''}`}
-              onClick={() => switchTab('register')}
-              role="tab"
-              aria-selected={tab === 'register'}
-            >
-              Register
-            </button>
+          <div className="cardBody" key={tab}>
+            {tab === 'login' ? (
+              <LoginForm onSwitchToRegister={() => switchTab('register')} />
+            ) : (
+              <RegisterForm onSwitchToLogin={() => switchTab('login')} />
+            )}
           </div>
-        </div>
-
-        <div className="cardBody" key={tab}>
-          {tab === 'login' ? (
-            <LoginForm onSwitchToRegister={() => switchTab('register')} />
-          ) : (
-            <RegisterForm onSwitchToLogin={() => switchTab('login')} />
-          )}
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
-export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
+  export default function App() {
+    return (
+      <BrowserRouter>
+        <Routes>
 
-        {/* Auth page */}
-        <Route path="/" element={<AuthPage />} />
+          {/* Auth page */}
+          <Route path="/" element={<AuthPage />} />
 
-        {/* Dashboard layout wraps all inner pages */}
-        {/* Using path="/*" so nested absolute paths like /users still match */}
-        <Route path="/" element={<Dashboard />}>
-          <Route path="users"    element={<Users />} />
-          <Route path="products" element={<Products />} />
-          <Route path="category" element={<Category />} />
-          <Route path="brands" element={<Brand />} />
-        </Route>
+          {/* Dashboard layout wraps all inner pages */}
+          {/* Using path="/*" so nested absolute paths like /users still match */}
+          <Route path="/" element={<Dashboard />}>
+            <Route path="users"    element={<Users />} />
+            <Route path="products" element={<Products />} />
+            <Route path="category" element={<Category />} />
+            <Route path="brands" element={<Brand />} />
+            <Route path="lists" element={<ProductsList />} />
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        
+          </Route>
 
-      </Routes>
-    </BrowserRouter>
-  )
-}
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+        </Routes>
+      </BrowserRouter>
+    )
+  }

@@ -3,6 +3,8 @@
 const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes')
 const categoryRoutes = require('./routes/category.routes')
+const brandRoutes = require('./routes/brand.routes')
+const allCategoryController = require ('./routes/lists.routes')
 const checkTelegramUpdates = require("./services/telegramPolling");
 const express = require("express");
 const cors = require("cors");
@@ -50,7 +52,10 @@ app.use("delete-user",authRoutes)
 app.use("/",productRoutes)
 
 app.use("/", categoryRoutes);
+  
+app.use("/",brandRoutes);
 
+app.use("/",allCategoryController);
 
 setInterval(() => {
   checkTelegramUpdates();

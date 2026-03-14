@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 /* ── helpers ─────────────────────────────────────────── */
-const PAGE_SIZE  = 5
+const PAGE_SIZE  = 8
 const MAX_IMAGES = 5
 
 function buildPages(total, current) {
