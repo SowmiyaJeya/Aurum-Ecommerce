@@ -18,7 +18,11 @@ const { getAllUsers , addUser,editUser,deleteUser} = require("../services/user.s
 
 exports.connectTelegram = async (req, res) => {
   try {
-    const { fullname, username, email, password, mobile } = req.body;
+
+    const { fullname, username, email, password, mobile, registerFrom } = req.body;
+
+    // Debug (optional)
+    console.log("Register From:", registerFrom);
 
     // 🔎 Check if username or email already exists
     const existingUser = await pool.query(
@@ -42,28 +46,114 @@ exports.connectTelegram = async (req, res) => {
       }
     }
 
+    // 🔐 Hash password
     const hashedPassword = await hashPassword(password);
 
+    // 🔑 Telegram token
     const token = crypto.randomBytes(16).toString("hex");
 
-    // Create user with pending status
-    await createPendingUser({
-      fullname,
-      username,
-      email,
-      password: hashedPassword,
-      mobile,
-      token
-    });
+    /* ---------- ROLE DECISION ---------- */
+
+    let roleName = "Admin"; // default role
+
+    if (registerFrom === "productlist") {
+      roleName = "User";
+    }
+
+    // Get roleid from userroles table
+    const roleResult = await pool.query(
+      `SELECT roleid FROM userroles WHERE rolename = $1`,
+      [roleName]
+    );
+
+    if (roleResult.rows.length === 0) {
+      return res.status(500).json({
+        message: `${roleName} role not found in database`,
+      });
+    }
+
+    const roleid = roleResult.rows[0].roleid;
+
+    /* ---------- INSERT USER ---------- */
+
+    await pool.query(
+      `INSERT INTO users
+       (fullname, username, email, password, mobile, telegram_token, status, roleid)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        fullname,
+        username,
+        email,
+        hashedPassword,
+        mobile,
+        token,
+        1,
+        roleid
+      ]
+    );
+
+    /* ---------- RESPONSE ---------- */
 
     res.json({
+      message: "Registration successful",
+      roleAssigned: roleName,
       telegramLink: `https://t.me/triotask_bot?start=${token}`
     });
 
   } catch (err) {
+    console.error("Register error:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
+// exports.connectTelegram = async (req, res) => {
+//   try {
+//     const { fullname, username, email, password, mobile,} = req.body;
+
+//     // 🔎 Check if username or email already exists
+//     const existingUser = await pool.query(
+//       `SELECT username, email FROM users WHERE username = $1 OR email = $2`,
+//       [username, email]
+//     );
+
+//     if (existingUser.rows.length > 0) {
+//       const user = existingUser.rows[0];
+
+//       if (user.username === username) {
+//         return res.status(400).json({
+//           message: "Username already taken",
+//         });
+//       }
+
+//       if (user.email === email) {
+//         return res.status(400).json({
+//           message: "Email already registered",
+//         });
+//       }
+//     }
+
+//     const hashedPassword = await hashPassword(password);
+
+//     const token = crypto.randomBytes(16).toString("hex");
+
+//     // Create user with pending status
+//     await createPendingUser({
+//       fullname,
+//       username,
+//       email,
+//       password: hashedPassword,
+//       mobile,
+//       token
+//     });
+
+//     res.json({
+//       telegramLink: `https://t.me/triotask_bot?start=${token}`
+//     });
+
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 // 2️⃣ STEP 2 — Called from polling when /start TOKEN is received
 exports.handleTelegramStart = async (token, chatId) => {
   try {
@@ -180,8 +270,11 @@ exports.login = async (req, res) => {
 
     // 🔎 Find user
     const result = await pool.query(
-      `SELECT * FROM users WHERE username = $1`,
-      [username]
+      `SELECT u.*, r.rolename 
+   FROM users u
+   JOIN userroles r ON u.roleid = r.roleid
+   WHERE u.username = $1`,
+  [username]
     );
 
     if (result.rows.length === 0) {
@@ -211,14 +304,15 @@ exports.login = async (req, res) => {
    // ✅ STORE USER IN SESSION (VERY IMPORTANT)
     req.session.usercode = user.usercode;
 
-    return res.status(200).json({
-      message: "Login successful",
-      user: {
-        usercode: user.usercode,
-        username: user.username,
-        email: user.email,
-      },
-    });
+   return res.status(200).json({
+  message: "Login successful",
+  user: {
+    usercode: user.usercode,
+    username: user.username,
+    email: user.email,
+    role: user.rolename
+  },
+});
 
 
   } catch (error) {

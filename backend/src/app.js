@@ -9,6 +9,8 @@ const checkTelegramUpdates = require("./services/telegramPolling");
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+const orderRoute = require("./routes/orders.routes");
+
 
 const app = express();
 
@@ -48,7 +50,8 @@ app.use("/", authRoutes);
 app.use("/add-users",authRoutes)
 app.use("/update-user",authRoutes)
 app.use("delete-user",authRoutes)
-
+app.use(express.json()); // parse JSON
+app.use("/", orderRoute);
 app.use("/",productRoutes)
 
 app.use("/", categoryRoutes);

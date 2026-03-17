@@ -83,6 +83,7 @@ export default function LoginForm({ onSwitchToRegister }) {
       startIdleTimer() // 🔥 start session idle timer
       if (data.token) localStorage.setItem('token', data.token)
       if (data.user)  localStorage.setItem('user', JSON.stringify(data.user))
+        
 
       showToast('success', '👋 Welcome back!', `Logged in as ${form.username}. Redirecting...`)
 

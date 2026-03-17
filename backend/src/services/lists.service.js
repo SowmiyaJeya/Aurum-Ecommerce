@@ -113,7 +113,20 @@ const filterByCategory = async ({ type, category_ids }) => {
   let query = `
     SELECT 
       p.*,
-      c.category_name
+      c.category_name,
+
+      (
+        SELECT JSON_AGG(pi.image_data ORDER BY pi.id DESC)
+        FROM product_images pi
+        WHERE pi.product_id = p.product_id
+      ) AS product_images,
+
+      (
+        SELECT COUNT(*)
+        FROM product_images pi
+        WHERE pi.product_id = p.product_id
+      ) AS image_count
+
     FROM products p
     JOIN category c 
       ON p.category_id = c.id
@@ -130,7 +143,6 @@ const filterByCategory = async ({ type, category_ids }) => {
 
   return result.rows;
 };
-
 const getProducts = async (page = 1) => {
 
   const limit = 8;
@@ -186,5 +198,6 @@ module.exports={
     searchProducts,
     filterByPrice,
     filterByBrand,
+    filterByCategory,
     getProducts
 }

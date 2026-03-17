@@ -2,7 +2,8 @@ import { useState } from "react";
 import PasswordStrength from "./PasswordStrength";
 import Toast from "./Toast";
 import "../styles/Auth.css";
-
+const params = new URLSearchParams(window.location.search)
+const registerFrom = params.get("from")
 function validateField(key, value) {
   switch (key) {
     case "fullname":
@@ -126,8 +127,11 @@ export default function RegisterForm({ onSwitchToLogin }) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
+          body: JSON.stringify({
+            ...form,
+            registerFrom
+          }),
+                  }
       );
 
       const data = await response.json();
