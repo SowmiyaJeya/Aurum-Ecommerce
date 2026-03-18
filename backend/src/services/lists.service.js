@@ -191,6 +191,22 @@ LIMIT $1 OFFSET $2`,
   };
 
 };
+const getLoggedInUser = async (userId) => {
+
+  const result = await pool.query(
+    `SELECT 
+        username,
+        email,
+        mobile
+     FROM users
+     WHERE usercode = $1`,
+    [userId]
+  );
+
+  return {
+    data: result.rows[0]
+  };
+};
 
 module.exports={
     listAllCategories,
@@ -199,5 +215,6 @@ module.exports={
     filterByPrice,
     filterByBrand,
     filterByCategory,
-    getProducts
+    getProducts,
+    getLoggedInUser
 }

@@ -261,9 +261,7 @@ function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout }
                   window.location.href = '/register?from=productlist'
                 } else {
                   onProceedToCheckout()
-              
-                
-                  window.location.href = '/checkout'
+                  // window.location.href = '/checkout'
                 }
               }}
               style={{ width:'100%', padding:'14px', borderRadius:12, background:'linear-gradient(135deg,#1a7a5e,#22997a)', color:'#fff', border:'none', fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:9, boxShadow:'0 6px 22px rgba(26,122,94,0.32)', transition:'all 0.2s ease' }}
@@ -638,7 +636,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
         <div className="site-topbar-links">
           <AuthHeaderSection />
           <div className="site-topbar-divider" />
-          {[['Email :', 'contact@Aurum.com'], ['Contact : +91', '9876543210'], ['Support :', '+91 1234567890']].map(([l, v], i) => (
+          {[['Email :', 'contact@shivasystems.com'], ['Contact : +91', '9876543210'], ['Support :', '+91 1234567890']].map(([l, v], i) => (
             <React.Fragment key={i}>{i > 0 && <div className="site-topbar-divider" />}<div className="site-topbar-item"><span className="site-topbar-label">{l}</span><span className="site-topbar-val">{v}</span></div></React.Fragment>
           ))}
         </div>
@@ -647,7 +645,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
       <div className="site-mainbar">
         <div className="site-logo" onClick={onHomeClick}>
           <div className="site-logo-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#1a7a5e" /><text x="14" y="20" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">✦</text></svg></div>
-          <span className="site-logo-name">Aurum</span>
+          <span className="site-logo-name">Shiva Systems</span>
         </div>
         <div className="site-searchbar" ref={searchRef} style={{ position:'relative' }}>
           <div className="site-search-cat">
@@ -1074,16 +1072,50 @@ export default function Products() {
   }
 
   // ── Proceed to checkout handler ───────────────────────────────────────────
-const handleProceedToCheckout = () => {
+const handleProceedToCheckout = async () => {
   setCartOpen(false)
   localStorage.setItem('cart', JSON.stringify(cart))
+
+  try {
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+
+    // ← covers all common key names your backend might use
+    const userId = storedUser?.usercode
+                ||  storedUser?.user_id
+                || storedUser?.id
+                || storedUser?.userId
+                || storedUser?.user?.id
+                || storedUser?.user?.user_id
+
+    console.log('storedUser:', storedUser)   // remove after confirming
+    console.log('resolved userId:', userId)  // remove after confirming
+
+    if (userId) {
+      const res = await fetch('http://localhost:5000/user-details', {
+        method  : 'POST',
+        headers : { 'Content-Type': 'application/json' },
+        body    : JSON.stringify({ type: 'userDetails', user_id: userId }),
+      })
+      const json = await res.json()
+      console.log('user-details response:', json)  // remove after confirming
+if (json.success && json.data) {
+  // Save API data directly — don't merge, avoid any key collision
+  localStorage.setItem('checkoutUser', JSON.stringify({
+    ...storedUser,
+    mobile : json.data.mobile || '',
+    email  : json.data.email  || storedUser.email || '',
+    name   : json.data.username || storedUser.username || '',
+  }))
+}
+    } else {
+      console.warn('No userId found in localStorage user object')
+    }
+  } catch (err) {
+    console.error('user-details fetch failed:', err)  // ← was silently swallowing errors before
+  }
+
   navigate('/checkout')
 }
-// const handleProceedToCheckout = () => {
-//   setCartOpen(false)
-//   localStorage.setItem('cart', JSON.stringify(cart))  // save cart first
-//   window.location.href = '/checkout'
-// }
   // ── Derived product list ──────────────────────────────────────────────────
   const fmt  = n => n != null ? new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(n) : '—'
   const disc = (o, s) => o && s && o > s ? Math.round((1 - s/o) * 100) : 0

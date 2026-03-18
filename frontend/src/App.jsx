@@ -31,7 +31,7 @@ function AuthPage({ defaultTab }) {
         <div className="cardHeader">
           <div className="brandRow">
             <div className="brandGem">✦</div>
-            <span className="brandName">Aurum</span>
+            <span className="brandName">Shiva Systems</span>
           </div>
 
           <div className="tabRow" role="tablist">

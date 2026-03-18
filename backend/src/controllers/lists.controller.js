@@ -283,3 +283,51 @@ exports.getAllProductsController = async (req, res) => {
 
   }
 };
+
+exports.loggedInUserController = async (req, res) => {
+  try {
+
+    const { type, user_id } = req.body;
+
+    // ✅ Check type
+    if (type !== "userDetails") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request type"
+      });
+    }
+
+    // ❌ Case 1: user_id not provided
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      });
+    }
+
+    const result = await productService.getLoggedInUser(user_id);
+
+    // ❌ Case 2: user not found in DB
+    if (!result.data) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // ✅ Success
+    return res.status(200).json({
+      success: true,
+      message: "User details fetched successfully",
+      data: result.data
+    });
+
+  } catch (error) {
+    console.error("Fetch User Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};

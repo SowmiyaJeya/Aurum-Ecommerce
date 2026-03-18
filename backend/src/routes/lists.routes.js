@@ -10,5 +10,6 @@ router.post("/filter-price", allController.filterByPriceController);
 router.post("/filter-brand", allController.filterByBrandController);
 router.post("/filter-category", allController.filterByCategoryController);
 router.post("/displayProducts",allController.getAllProductsController);
+router.post("/user-details", allController.loggedInUserController);
 
 module.exports = router;

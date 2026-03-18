@@ -402,7 +402,7 @@ export default function Dashboard() {
           <header className="dash__topbar">
             <div className="dash__topbarBrand">
               <span className="dash__topbarGem">✦</span>
-              <span className="dash__topbarName">Aurum</span>
+              <span className="dash__topbarName">Shiva Systems</span>
             </div>
             <span className="dash__topbarTitle">{getActiveLabel()}</span>
           </header>
