@@ -75,6 +75,28 @@ Thank you for shopping 🛍️
     console.error("Telegram Order Message Error:", error.response?.data || error.message);
   }
 }
+
+const sendOrderStatusMessage = async (chatId, data) => {
+  const { order_id, status, reason, username } = data;
+
+  let message = `📦 Order Update\n\n`;
+  message += `👤 ${username}\n`;
+  // message += `🆔 Order ID: ${order_id}\n`;
+  // message += `📌 Status: ${status}\n`;
+
+  if (reason) {
+    message += `⚠️Your Order ID # ${order_id} was ${status} due to ${reason}\n`;
+  }
+
+  message += `\nPlease contact contact@shivasystems.com if needed.`;
+
+  await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+    chat_id: chatId,
+    text: message
+  });
+};
+
   module.exports = { sendOTP ,
-    sendOrderMessage
+    sendOrderMessage,
+    sendOrderStatusMessage
   };

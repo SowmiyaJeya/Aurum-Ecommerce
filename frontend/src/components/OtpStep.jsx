@@ -1,13 +1,3 @@
-// ============================================================
-// OtpStep.jsx
-// Renders the 6-box OTP entry after registration form submit.
-// Props:
-//   username  (string) — needed for OTP verification
-//   onResend  (func)   — trigger resend OTP
-//   onBack    (func)   — go back to registration form
-//   onSuccess (func)   — optional (switch to login after success)
-// ============================================================
-
 import { useState, useRef } from 'react'
 import '../styles/Auth.css'
 

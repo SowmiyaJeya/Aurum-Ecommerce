@@ -495,14 +495,14 @@ export default function Products() {
 
         .prod-addBtn {
           display: flex; align-items: center; gap: 8px;
-          padding: 12px 22px; background: #1a7a5e; color: #fff;
+          padding: 12px 22px; background: #b91c1c; color: #fff;
           border: none; border-radius: 12px; cursor: pointer;
           font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
           box-shadow: 0 4px 14px rgba(26,122,94,0.3);
           transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
           white-space: nowrap; flex-shrink: 0;
         }
-        .prod-addBtn:hover { background: #1d8a6a; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,122,94,0.35); }
+        .prod-addBtn:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,122,94,0.35); }
 
         .prod-card {
           background: #fff; border-radius: 18px;

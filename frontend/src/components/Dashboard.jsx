@@ -360,7 +360,7 @@ export default function Dashboard() {
       <div className="dash">
         <aside className="dash__sidebar">
           <div className="dash__sidebarLogo">
-            <div className="dash__sidebarLogoMark">A</div>
+            <div className="dash__sidebarLogoMark">SS</div>
           </div>
 
           <nav className="dash__nav">

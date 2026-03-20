@@ -14,7 +14,6 @@ function bufferToDataUrl(bufferObj) {
   } catch { return null }
 }
 
-
 /* ── helpers ─────────────────────────────────────────── */
 const PAGE_SIZE = 5
 
@@ -62,36 +61,35 @@ function useOrders() {
   const [currentPage, setCurrentPage]   = useState(1)
 
   const fetchOrders = useCallback(async (page = 1) => {
-    setLoading(true)
-    try {
-      const res  = await fetch('http://localhost:5000/all-orders', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'displayAllOrders', page }),
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.message || 'Failed to fetch orders.')
-      const mapped = (json.data ?? []).map((o, i) => ({
-        id:             o.order_id ?? i + 1,
-        order_id:       o.order_id ?? i + 1,
-        customer_name:  o.username       ?? '—',
-        payment_method: o.method         ?? '—',
-        total_amount:   parseFloat(o.total_amount ?? 0),
-        status:         o.order_status   ?? 'Pending',
-        updated_at:     o.updated_at     ?? null,
-        items:          o.items          ?? [],
-      }))
-      setOrders(mapped)
-      setTotalRecords(json.total_orders ?? mapped.length)
-      setCurrentPage(json.page ?? page)
-    } catch {
-      setOrders([]); setTotalRecords(0)
-    } finally { setLoading(false) }
-  }, [])
+  setLoading(true)
+  try {
+    const res = await fetch('http://localhost:5000/all-orders', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'displayAllOrders', page }),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || 'Failed to fetch orders.')
+    const mapped = (json.data ?? []).map((o, i) => ({
+      id:             o.order_id        ?? i + 1,
+      order_id:       o.order_id        ?? i + 1,
+      customer_name:  o.username        ?? '—',
+      payment_method: o.method          ?? '—',
+      total_amount:   parseFloat(o.total_amount ?? 0),
+      status:         o.status_name     ?? 'Placed',  
+      updated_at:     o.updated_at      ?? null,
+      items:          o.items           ?? [],
+    }))
+    setOrders(mapped)
+    setTotalRecords(json.total_orders ?? mapped.length)
+    setCurrentPage(json.page ?? page)
+  } catch {
+    setOrders([]); setTotalRecords(0)
+  } finally { setLoading(false) }
+}, [])
 
-  useEffect(() => { fetchOrders(1) }, [fetchOrders])
-  return { orders, ordersLoading, totalRecords, currentPage, refetch: fetchOrders }
+useEffect(() => { fetchOrders(1) }, [fetchOrders])
+return { orders, ordersLoading, totalRecords, currentPage, refetch: fetchOrders }
 }
-
 /* ── Status config ───────────────────────────────────── */
 const STATUS_CONFIG = {
   Pending:    { dot: '#f59e0b', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.28)',  text: '#b45309' },
@@ -99,8 +97,10 @@ const STATUS_CONFIG = {
   Shipped:    { dot: '#8b5cf6', bg: 'rgba(139,92,246,0.10)', border: 'rgba(139,92,246,0.28)',  text: '#6d28d9' },
   Delivered:  { dot: '#22c55e', bg: 'rgba(34,197,94,0.10)',  border: 'rgba(34,197,94,0.25)',   text: '#16a34a' },
   Cancelled:  { dot: '#ef4444', bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.22)',   text: '#dc2626' },
+  Hold:       { dot: '#6b7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.25)', text: '#374151' },
   Placed:     { dot: '#f59e0b', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.28)',  text: '#b45309' },
   PLACED:     { dot: '#f59e0b', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.28)',  text: '#b45309' },
+  Cancel:     { dot: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.22)', text: '#dc2626' },
 }
 
 function StatusBadge({ status }) {
@@ -125,8 +125,225 @@ function MethodBadge({ method }) {
   )
 }
 
+/* ── canHold / canCancel helpers ─────────────────────── */
+function canHold(status) {
+  return ['Pending', 'Placed', 'PLACED', 'Processing'].includes(status)
+}
+function canCancel(status) {
+  return !['Delivered', 'Cancelled','Cancel'].includes(status)
+}
+
+function HoldOrderModal({ order, onClose, onConfirm }) {
+  const [note,   setNote]   = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleConfirm = async () => {
+  setLoading(true)
+  await onConfirm({ order_id: order.order_id, status: 'Hold', note })  // no reason
+  setLoading(false)
+}
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 480, boxShadow: '0 24px 60px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+
+        {/* Header */}
+        <div style={{ padding: '22px 24px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f3f4f6', border: '1px solid rgba(107,114,128,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⏸️</div>
+            <div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 17, color: '#1a1a1a' }}>Put order on hold</div>
+              <div style={{ fontSize: 13, color: '#999', marginTop: 2, fontFamily: "'DM Sans', sans-serif" }}>Order #{order.order_id} · {order.customer_name}</div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#aaa', lineHeight: 1, padding: 4 }}>✕</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '20px 24px', fontFamily: "'DM Sans', sans-serif" }}>
+          {/* Order summary strip */}
+          <div style={{ background: '#f9f8f6', borderRadius: 12, padding: '12px 16px', marginBottom: 20, border: '1px solid #efefef', display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#aaa', marginBottom: 4 }}>Amount</div>
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a' }}>Rs.{order.total_amount.toFixed(2)}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#aaa', marginBottom: 4 }}>Payment</div>
+              <MethodBadge method={order.payment_method} />
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#aaa', marginBottom: 4 }}>Current Status</div>
+              <StatusBadge status={order.status} />
+            </div>
+          </div>
+
+          <p style={{ fontSize: 13, color: '#777', lineHeight: 1.6, marginBottom: 18 }}>
+            Placing this order on hold will pause any further processing. You can resume it at any time by updating the order status.
+          </p>
+
+          {/* Note textarea */}
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#444', marginBottom: 7 }}>
+              Additional note <span style={{ color: '#bbb', fontWeight: 400 }}>(optional)</span>
+            </label>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={3}
+              placeholder="Add an internal note about this hold…"
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid #e0e0e0', fontSize: 13, color: '#333', fontFamily: "'DM Sans', sans-serif", resize: 'vertical', outline: 'none' }}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px 20px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <button
+            onClick={onClose}
+            style={{ padding: '9px 22px', borderRadius: 10, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#555' }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={loading}
+            style={{ padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(107,114,128,0.4)', background: '#f3f4f6', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, color: '#374151', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            {loading ? <span style={{ fontSize: 14, animation: 'spin 1s linear infinite', display: 'inline-block' }}>◈</span> : '⏸'}
+            {loading ? 'Holding…' : 'Confirm hold'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Cancel Order Modal ──────────────────────────────── */
+const CANCEL_REASONS = [
+  'Customer requested cancellation',
+  'Item out of stock',
+  'Duplicate order',
+  'Fraudulent order',
+  'Delivery not possible',
+  'Other',
+]
+
+function CancelOrderModal({ order, onClose, onConfirm }) {
+  const [reason,  setReason]  = useState('')
+  const [note,    setNote]    = useState('')
+  const [error,   setError]   = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleConfirm = async () => {
+    if (!reason) { setError('Please select a reason for cancellation.'); return }
+    setError('')
+    setLoading(true)
+    await onConfirm({ order_id: order.order_id, status: 'Cancel', note })
+    setLoading(false)
+  }
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 480, boxShadow: '0 24px 60px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+
+        {/* Header */}
+        <div style={{ padding: '22px 24px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🚫</div>
+            <div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 17, color: '#1a1a1a' }}>Cancel this order?</div>
+              <div style={{ fontSize: 13, color: '#999', marginTop: 2, fontFamily: "'DM Sans', sans-serif" }}>Order #{order.order_id} · {order.customer_name}</div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#aaa', lineHeight: 1, padding: 4 }}>✕</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '20px 24px', fontFamily: "'DM Sans', sans-serif" }}>
+          {/* Order summary strip */}
+          <div style={{ background: '#f9f8f6', borderRadius: 12, padding: '12px 16px', marginBottom: 20, border: '1px solid #efefef', display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#aaa', marginBottom: 4 }}>Amount</div>
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a' }}>Rs.{order.total_amount.toFixed(2)}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#aaa', marginBottom: 4 }}>Payment</div>
+              <MethodBadge method={order.payment_method} />
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#aaa', marginBottom: 4 }}>Current Status</div>
+              <StatusBadge status={order.status} />
+            </div>
+          </div>
+
+          {/* Warning banner */}
+          <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 10, padding: '10px 14px', marginBottom: 18, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+            <p style={{ fontSize: 13, color: '#b91c1c', lineHeight: 1.5, margin: 0 }}>
+              This action <strong>cannot be undone.</strong> The order will be marked as Cancelled and the customer may be notified.
+            </p>
+          </div>
+
+          {/* Reason dropdown */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#444', marginBottom: 7 }}>
+              Reason for cancellation <span style={{ color: '#ef4444', fontWeight: 600 }}>*</span>
+            </label>
+            <select
+              value={reason}
+              onChange={e => { setReason(e.target.value); setError('') }}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: `1px solid ${error ? '#ef4444' : '#e0e0e0'}`, fontSize: 13, color: reason ? '#333' : '#aaa', background: '#fff', fontFamily: "'DM Sans', sans-serif", outline: 'none', cursor: 'pointer' }}
+            >
+              <option value="">Select a reason…</option>
+              {CANCEL_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            {error && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 5 }}>{error}</p>}
+          </div>
+
+          {/* Note textarea */}
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#444', marginBottom: 7 }}>
+              Additional note <span style={{ color: '#bbb', fontWeight: 400 }}></span>
+            </label>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={3}
+              placeholder="Add an internal note about this cancellation…"
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid #e0e0e0', fontSize: 13, color: '#333', fontFamily: "'DM Sans', sans-serif", resize: 'vertical', outline: 'none' }}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px 20px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <button
+            onClick={onClose}
+            style={{ padding: '9px 22px', borderRadius: 10, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#555' }}
+          >
+            Go back
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={loading}
+            style={{ padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, color: '#dc2626', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            {loading ? <span style={{ fontSize: 14, animation: 'spin 1s linear infinite', display: 'inline-block' }}>◈</span> : '🚫'}
+            {loading ? 'Cancelling…' : 'Yes, cancel order'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Order Items View Modal ──────────────────────────── */
-function ViewOrderModal({ order, onClose }) {
+function ViewOrderModal({ order, onClose, onHold, onCancel }) {
   const [items, setItems]               = useState([])
   const [mobile, setMobile]             = useState(null)
   const [itemsLoading, setItemsLoading] = useState(true)
@@ -170,7 +387,7 @@ function ViewOrderModal({ order, onClose }) {
               </div>
               {mobile && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 12, color: '#1a7a5e', fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
-                  <span></span> {mobile}
+                  <span>📞</span> {mobile}
                 </div>
               )}
             </div>
@@ -262,9 +479,34 @@ function ViewOrderModal({ order, onClose }) {
           )}
         </div>
 
-        {/* Footer */}
-        <div style={{ padding: '16px 24px 22px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: '10px 28px', borderRadius: 10, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#555' }}>Close</button>
+        {/* Footer — with Hold / Cancel shortcuts */}
+        <div style={{ padding: '16px 24px 22px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, gap: 10, flexWrap: 'wrap' }}>
+          {/* Left: action shortcuts */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {canHold(order.status) && (
+              <button
+                onClick={() => { onClose(); onHold(order) }}
+                style={{ padding: '9px 18px', borderRadius: 10, border: '1px solid rgba(107,114,128,0.3)', background: '#f3f4f6', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                ⏸ Hold order
+              </button>
+            )}
+            {canCancel(order.status) && (
+              <button
+                onClick={() => { onClose(); onCancel(order) }}
+                style={{ padding: '9px 18px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.07)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                🚫 Cancel order
+              </button>
+            )}
+          </div>
+          {/* Right: close */}
+          <button
+            onClick={onClose}
+            style={{ padding: '9px 22px', borderRadius: 10, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#555' }}
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
@@ -275,9 +517,9 @@ function ViewOrderModal({ order, onClose }) {
 export default function Orders() {
   const { orders, ordersLoading, totalRecords, refetch } = useOrders()
   const [page, setPage]     = useState(1)
-  const [modal, setModal]   = useState(null)
+  const [modal, setModal]   = useState(null)   // { type: 'view'|'hold'|'cancel', order }
   const [user, setUser]     = useState(null)
-  const [mobiles, setMobiles] = useState({}) // { order_id: phone }
+  const [mobiles, setMobiles] = useState({})
   const navigate            = useNavigate()
   const { toasts, add: toast, remove: removeToast } = useToasts()
 
@@ -294,7 +536,6 @@ export default function Orders() {
   useEffect(() => {
     if (orders.length === 0) return
     orders.forEach(o => {
-      // Skip if already fetched
       if (mobiles[o.order_id]) return
       fetch('http://localhost:5000/order-items', {
         method: 'POST',
@@ -303,21 +544,48 @@ export default function Orders() {
       })
         .then(r => r.json())
         .then(json => {
-          if (json.mobile) {
-            setMobiles(prev => ({ ...prev, [o.order_id]: json.mobile }))
-          }
+          if (json.mobile) setMobiles(prev => ({ ...prev, [o.order_id]: json.mobile }))
         })
         .catch(() => {})
     })
   }, [orders])
 
+  /* ── Status update (Hold / Cancel) ─── */
+  // REPLACE the entire updateOrderStatus callback with:
+const updateOrderStatus = useCallback(async ({ order_id, status, reason, note }) => {
+  try {
+    const res = await fetch('http://localhost:5000/update-status', {   // ← new URL
+      method: 'PUT',                                                    // ← PUT
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_id,
+        status,
+        reason: note || reason || undefined,   // note field → reason param
+      }),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.message || 'Failed to update order.')
+
+    toast(
+      status === 'Hold'
+        ? `Order #${order_id} placed on hold.`
+        : `Order #${order_id} has been cancelled.`,
+      status === 'Hold' ? 'info' : 'error'
+    )
+    refetch(page)
+  } catch (err) {
+    toast(err.message || 'Something went wrong.', 'error')
+  }
+}, [page, refetch, toast])
   const total    = totalRecords
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const safePage = Math.min(page, lastPage)
   const pages    = buildPages(total, safePage)
 
-  const openView   = (o) => setModal({ type: 'view', order: o })
-  const closeModal = () => setModal(null)
+  const openView   = (o) => setModal({ type: 'view',   order: o })
+  const openHold   = (o) => setModal({ type: 'hold',   order: o })
+  const openCancel = (o) => setModal({ type: 'cancel', order: o })
+  const closeModal = ()  => setModal(null)
 
   return (
     <>
@@ -351,7 +619,7 @@ export default function Orders() {
 
         .ord-table {
           width: 100%; border-collapse: collapse;
-          font-family: 'DM Sans', sans-serif; min-width: 700px;
+          font-family: 'DM Sans', sans-serif; min-width: 820px;
         }
 
         .ord-table thead tr {
@@ -359,7 +627,7 @@ export default function Orders() {
         }
 
         .ord-table th {
-          padding: 14px 20px; font-size: 11px; font-weight: 700;
+          padding: 14px 16px; font-size: 11px; font-weight: 700;
           text-transform: uppercase; letter-spacing: 0.08em;
           color: #aaa; text-align: left; white-space: nowrap;
         }
@@ -373,7 +641,7 @@ export default function Orders() {
         .ord-table tbody tr:hover { background: #fafaf8; }
 
         .ord-table td {
-          padding: 13px 20px; font-size: 14px; color: #444; vertical-align: middle;
+          padding: 13px 16px; font-size: 14px; color: #444; vertical-align: middle;
         }
 
         .ord-sno {
@@ -391,17 +659,49 @@ export default function Orders() {
 
         .ord-amount { font-weight: 700; color: #1a1a1a; }
 
+        /* ── Action buttons ── */
+        .ord-actionsWrap {
+          display: flex; align-items: center; gap: 6px;
+          justify-content: center; flex-wrap: nowrap;
+        }
+
         .ord-viewBtn {
           display: inline-flex; align-items: center; gap: 6px;
-          padding: 7px 16px; border-radius: 9px; border: 1.5px solid rgba(26,122,94,0.3);
+          padding: 6px 14px; border-radius: 9px; border: 1.5px solid rgba(26,122,94,0.3);
           background: #edf7f2; color: #1a7a5e; cursor: pointer;
-          font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+          font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
           transition: all 0.15s ease; white-space: nowrap;
         }
         .ord-viewBtn:hover {
           background: #d6f0e6; border-color: rgba(26,122,94,0.5);
           transform: translateY(-1px); box-shadow: 0 3px 10px rgba(26,122,94,0.15);
         }
+
+        .ord-holdBtn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 6px 14px; border-radius: 9px; border: 1.5px solid rgba(107,114,128,0.3);
+          background: #f3f4f6; color: #374151; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+          transition: all 0.15s ease; white-space: nowrap;
+        }
+        .ord-holdBtn:hover:not(:disabled) {
+          background: #e5e7eb; border-color: rgba(107,114,128,0.5);
+          transform: translateY(-1px); box-shadow: 0 3px 10px rgba(107,114,128,0.15);
+        }
+        .ord-holdBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .ord-cancelBtn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 6px 14px; border-radius: 9px; border: 1.5px solid rgba(239,68,68,0.25);
+          background: rgba(239,68,68,0.07); color: #dc2626; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+          transition: all 0.15s ease; white-space: nowrap;
+        }
+        .ord-cancelBtn:hover:not(:disabled) {
+          background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.45);
+          transform: translateY(-1px); box-shadow: 0 3px 10px rgba(239,68,68,0.15);
+        }
+        .ord-cancelBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
         .ord-empty {
           text-align: center; padding: 60px 20px;
@@ -441,8 +741,10 @@ export default function Orders() {
         ))}
       </div>
 
-      {/* View Modal */}
-      {modal?.type === 'view' && <ViewOrderModal order={modal.order} onClose={closeModal} />}
+      {/* Modals */}
+      {modal?.type === 'view'   && <ViewOrderModal   order={modal.order} onClose={closeModal} onHold={openHold} onCancel={openCancel} />}
+      {modal?.type === 'hold'   && <HoldOrderModal   order={modal.order} onClose={closeModal} onConfirm={updateOrderStatus} />}
+      {modal?.type === 'cancel' && <CancelOrderModal order={modal.order} onClose={closeModal} onConfirm={updateOrderStatus} />}
 
       <div className="ord-wrap">
         {/* Top bar */}
@@ -477,7 +779,7 @@ export default function Orders() {
                     <th>Total Amount</th>
                     <th>Order Status</th>
                     <th>Last Updated</th>
-                    <th style={{ textAlign: 'center' }}>Action</th>
+                    <th style={{ textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -500,7 +802,7 @@ export default function Orders() {
                             <div className="ord-name">{o.customer_name}</div>
                             {mobiles[o.order_id] ? (
                               <div className="ord-phone">
-                                <span></span>
+                                <span>📞</span>
                                 {mobiles[o.order_id]}
                               </div>
                             ) : (
@@ -524,11 +826,34 @@ export default function Orders() {
                       {/* Last Updated */}
                       <td style={{ color: '#aaa', fontSize: 13 }}>{formatDate(o.updated_at)}</td>
 
-                      {/* View Button */}
-                      <td style={{ textAlign: 'center' }}>
-                        <button className="ord-viewBtn" onClick={() => openView(o)}>
-                          <span style={{ fontSize: 14 }}>👁</span> View
-                        </button>
+                      {/* Actions */}
+                      <td>
+                        <div className="ord-actionsWrap">
+                          {/* View */}
+                          <button className="ord-viewBtn" onClick={() => openView(o)}>
+                            <span style={{ fontSize: 13 }}>👁</span> View
+                          </button>
+
+                          {/* Hold */}
+                          <button
+                            className="ord-holdBtn"
+                            onClick={() => openHold(o)}
+                            disabled={!canHold(o.status)}
+                            title={!canHold(o.status) ? 'Cannot hold at this stage' : 'Put order on hold'}
+                          >
+                            <span style={{ fontSize: 13 }}>⏸</span> Hold
+                          </button>
+
+                          {/* Cancel */}
+                          <button
+                            className="ord-cancelBtn"
+                            onClick={() => openCancel(o)}
+                            disabled={!canCancel(o.status)}
+                            title={!canCancel(o.status) ? 'Cannot cancel at this stage' : 'Cancel order'}
+                          >
+                            <span style={{ fontSize: 13 }}>🚫</span> Cancel
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

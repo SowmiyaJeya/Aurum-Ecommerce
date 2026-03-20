@@ -106,54 +106,6 @@ exports.connectTelegram = async (req, res) => {
   }
 };
 
-// exports.connectTelegram = async (req, res) => {
-//   try {
-//     const { fullname, username, email, password, mobile,} = req.body;
-
-//     // 🔎 Check if username or email already exists
-//     const existingUser = await pool.query(
-//       `SELECT username, email FROM users WHERE username = $1 OR email = $2`,
-//       [username, email]
-//     );
-
-//     if (existingUser.rows.length > 0) {
-//       const user = existingUser.rows[0];
-
-//       if (user.username === username) {
-//         return res.status(400).json({
-//           message: "Username already taken",
-//         });
-//       }
-
-//       if (user.email === email) {
-//         return res.status(400).json({
-//           message: "Email already registered",
-//         });
-//       }
-//     }
-
-//     const hashedPassword = await hashPassword(password);
-
-//     const token = crypto.randomBytes(16).toString("hex");
-
-//     // Create user with pending status
-//     await createPendingUser({
-//       fullname,
-//       username,
-//       email,
-//       password: hashedPassword,
-//       mobile,
-//       token
-//     });
-
-//     res.json({
-//       telegramLink: `https://t.me/triotask_bot?start=${token}`
-//     });
-
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 // 2️⃣ STEP 2 — Called from polling when /start TOKEN is received
 exports.handleTelegramStart = async (token, chatId) => {
   try {
@@ -231,18 +183,6 @@ exports.verifyOtpAndRegister = async (req, res) => {
        VALUES ($1, $2, NOW())`,
       [user.usercode, otp]
     );
-
-    // // 2️⃣ Update users table
-    // await pool.query(
-    //   `UPDATE users
-    //    SET status = 'active',
-    //        otp = NULL,
-    //        otp_expires = NULL,
-    //        telegram_token = NULL
-    //    WHERE usercode  = $1`,
-    //   [user.usercode]
-    // );
-
     await pool.query("COMMIT");
 
     return res.status(200).json({
@@ -347,71 +287,6 @@ exports.handleUserActions = async (req, res) => {
     });
   }
 };
-
-// exports.addUserController = async (req, res) => {
-//   try {
-//     const { fullname, username, password, email, mobile, role } = req.body;
-
-//     if (!fullname || !username || !password || !email || !mobile || !role) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "All fields are required"
-//       });
-//     }
-
-//     const result = await addUser(req.body);
-
-//     return res.status(201).json({
-//       success: true,
-//       message: result.message
-//     });
-
-//   } catch (error) {
-//     return res.status(500).json({
-//       success: false,
-//       message: error.message
-//     });
-//   }
-// };
-
-// exports.addUserController = async (req, res) => {
-//   try {
-//     const { fullname, username, password, email, mobile, role } = req.body;
-
-//     if (!fullname || !username || !password || !email || !mobile || !role) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "All fields are required"
-//       });
-//     }
-
-//     // ✅ Get maker_id from session
-//     const maker_id = req.session.usercode;
-//     console.log("SESSION:", req.session);
-//     if (!maker_id) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "User not logged in"
-//       });
-//     }
-
-//     const result = await addUser({
-//       ...req.body,
-//       maker_id
-//     });
-
-//     return res.status(201).json({
-//       success: true,
-//       message: result.message
-//     });
-
-//   } catch (error) {
-//     return res.status(500).json({
-//       success: false,
-//       message: error.message
-//     });
-//   }
-// };
 exports.addUserController = async (req, res) => {
   try {
     const { fullname, username, password, email, mobile, role, maker_id } = req.body;

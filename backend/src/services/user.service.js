@@ -1,16 +1,6 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 
-// const createPendingUser = async (userData) => {
-//   const { fullname, username, email, password, mobile, token } = userData;
-
-//   await pool.query(
-//     `INSERT INTO users 
-//      (fullname, username, email, password, mobile, telegram_token, status)
-//      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-//     [fullname, username, email, password, mobile, token, 1] // 👈 status = 1
-//   );
-// };
 const createPendingUser = async (userData) => {
 
   const { fullname, username, email, password, mobile, token, registerFrom } = userData;

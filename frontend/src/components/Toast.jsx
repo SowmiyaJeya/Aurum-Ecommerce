@@ -1,12 +1,3 @@
-// ============================================================
-// Toast.jsx — Animated toast notification component
-// Props:
-//   title   (string)  — Bold heading
-//   message (string)  — Body text
-//   icon    (string)  — Emoji icon
-//   onHide  (func)    — Called when toast finishes dismissing
-// ============================================================
-
 import { useState, useEffect } from 'react'
 import '../styles/Toast.css'
 
