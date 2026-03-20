@@ -69,13 +69,13 @@ function BrandMultiSelect({ value, onChange, brands, loading }) {
         onClick={() => !loading && setOpen(o => !o)}
         style={{
           minHeight: 42, padding: '6px 36px 6px 10px', borderRadius: 10,
-          border: `1px solid ${open ? '#1a7a5e' : '#e0e0e0'}`,
+          border: `1px solid ${open ? '#b91c1c' : '#e0e0e0'}`,
           background: loading ? '#f9f9f9' : '#fff',
           cursor: loading ? 'not-allowed' : 'pointer',
           display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center',
           boxSizing: 'border-box', width: '100%',
           transition: 'border-color 0.15s, box-shadow 0.15s', position: 'relative',
-          boxShadow: open ? '0 0 0 3px rgba(26,122,94,0.08)' : 'none',
+          boxShadow: open ? '0 0 0 3px rgba(185, 28, 28, 0.08)' : 'none',
         }}
       >
         {selectedBrands.length === 0 && (
@@ -86,16 +86,16 @@ function BrandMultiSelect({ value, onChange, brands, loading }) {
         {selectedBrands.map(b => (
           <span key={b.brand_id} style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            background: '#edf7f2', border: '1px solid rgba(26,122,94,0.25)',
+            background: '#fef2f2', border: '1px solid rgba(185, 28, 28, 0.25)',
             borderRadius: 6, padding: '2px 8px', fontSize: 13,
-            color: '#1a7a5e', fontFamily: "'DM Sans', sans-serif", fontWeight: 500,
+            color: '#b91c1c', fontFamily: "'DM Sans', sans-serif", fontWeight: 500,
           }}>
             {b.brand_name}
             <button
               onClick={e => remove(b.brand_id, e)}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: 0, lineHeight: 1, color: '#1a7a5e', fontSize: 15, opacity: 0.7,
+                padding: 0, lineHeight: 1, color: '#b91c1c', fontSize: 15, opacity: 0.7,
               }}
             >×</button>
           </span>
@@ -144,18 +144,18 @@ function BrandMultiSelect({ value, onChange, brands, loading }) {
                   style={{
                     padding: '10px 14px', cursor: 'pointer', fontSize: 14,
                     fontFamily: "'DM Sans', sans-serif",
-                    color: selected ? '#1a7a5e' : '#333',
-                    background: selected ? 'rgba(26,122,94,0.05)' : 'transparent',
+                    color: selected ? '#b91c1c' : '#333',
+                    background: selected ? 'rgba(185, 28, 28, 0.05)' : 'transparent',
                     display: 'flex', alignItems: 'center', gap: 10,
                     transition: 'background 0.12s',
                   }}
                   onMouseEnter={e => { if (!selected) e.currentTarget.style.background = '#f9faf8' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = selected ? 'rgba(26,122,94,0.05)' : 'transparent' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = selected ? 'rgba(185, 28, 28, 0.05)' : 'transparent' }}
                 >
                   <span style={{
                     width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                    border: selected ? '1.5px solid #1a7a5e' : '1.5px solid #d0d0d0',
-                    background: selected ? '#1a7a5e' : '#fff',
+                    border: selected ? '1.5px solid #b91c1c' : '1.5px solid #d0d0d0',
+                    background: selected ? '#b91c1c' : '#fff',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 10, color: '#fff', transition: 'all 0.12s',
                   }}>
@@ -254,8 +254,8 @@ function CategoryModal({ mode, initial, onClose, onSave, loading }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
-              width: 44, height: 44, borderRadius: 12, background: '#edf7f2',
-              border: '1px solid rgba(26,122,94,0.2)', display: 'flex',
+              width: 44, height: 44, borderRadius: 12, background: '#fef2f2',
+              border: '1px solid rgba(185, 28, 28, 0.2)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', fontSize: 20,
             }}>◉</div>
             <div>
@@ -306,8 +306,8 @@ function CategoryModal({ mode, initial, onClose, onSave, loading }) {
               Brand Names
               {form.brand_ids.length > 0 && (
                 <span style={{
-                  marginLeft: 8, fontSize: 11, fontWeight: 500, color: '#1a7a5e',
-                  background: 'rgba(26,122,94,0.08)', padding: '2px 7px', borderRadius: 20,
+                  marginLeft: 8, fontSize: 11, fontWeight: 500, color: '#b91c1c',
+                  background: 'rgba(185, 28, 28, 0.08)', padding: '2px 7px', borderRadius: 20,
                 }}>
                   {form.brand_ids.length} selected
                 </span>
@@ -369,10 +369,10 @@ function CategoryModal({ mode, initial, onClose, onSave, loading }) {
             fontSize: 14, fontWeight: 500, color: '#555',
           }}>Cancel</button>
           <button onClick={handleSubmit} disabled={loading} style={{
-            padding: '10px 24px', borderRadius: 10, border: 'none', background: '#1a7a5e',
+            padding: '10px 24px', borderRadius: 10, border: 'none', background: '#b91c1c',
             color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
             fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600,
-            opacity: loading ? 0.7 : 1, boxShadow: '0 3px 10px rgba(26,122,94,0.25)',
+            opacity: loading ? 0.7 : 1, boxShadow: '0 3px 10px rgba(185, 28, 28, 0.25)',
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
             {loading && (
@@ -614,14 +614,14 @@ const openEdit = (c) => {
 
         .cat-addBtn {
           display: flex; align-items: center; gap: 8px;
-          padding: 12px 22px; background: #1a7a5e; color: #fff;
+          padding: 12px 22px; background: #b91c1c; color: #fff;
           border: none; border-radius: 12px; cursor: pointer;
           font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
-          box-shadow: 0 4px 14px rgba(26,122,94,0.3);
+          box-shadow: 0 4px 14px rgba(185, 28, 28, 0.3);
           transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
           white-space: nowrap; flex-shrink: 0;
         }
-        .cat-addBtn:hover { background: #1d8a6a; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,122,94,0.35); }
+        .cat-addBtn:hover { background: #991b1b; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(185, 28, 28, 0.35); }
 
         .cat-card {
           background: #fff; border-radius: 18px;
@@ -671,8 +671,8 @@ const openEdit = (c) => {
           justify-content: center; font-size: 15px;
           transition: background 0.15s ease, transform 0.12s ease;
         }
-        .cat-editBtn { background: #f0f7f4; }
-        .cat-editBtn:hover { background: #d6f0e6; transform: scale(1.08); }
+        .cat-editBtn { background: #fef2f2; }
+        .cat-editBtn:hover { background: #fee2e2; transform: scale(1.08); }
         .cat-deleteBtn { background: #fdf2f2; }
         .cat-deleteBtn:hover { background: #fce0e0; transform: scale(1.08); }
 
@@ -688,7 +688,7 @@ const openEdit = (c) => {
         }
 
         .cat-spinner {
-          font-size: 28px; color: #1a7a5e;
+          font-size: 28px; color: #b91c1c;
           animation: catSpin 1s linear infinite; display: inline-block;
         }
 
@@ -705,8 +705,8 @@ const openEdit = (c) => {
           font-size: 14px; color: #555; display: flex; align-items: center;
           justify-content: center; transition: all 0.15s ease;
         }
-        .cat-pageBtn:hover:not(:disabled) { background: #f0f7f4; border-color: rgba(26,122,94,0.3); color: #1a7a5e; }
-        .cat-pageBtn.active { background: #1a7a5e; color: #fff; border-color: #1a7a5e; font-weight: 700; }
+        .cat-pageBtn:hover:not(:disabled) { background: #fef2f2; border-color: rgba(185, 28, 28, 0.3); color: #b91c1c; }
+        .cat-pageBtn.active { background: #b91c1c; color: #fff; border-color: #b91c1c; font-weight: 700; }
         .cat-pageBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
         .cat-pageEllipsis { color: #bbb; font-size: 16px; padding: 0 4px; line-height: 36px; }

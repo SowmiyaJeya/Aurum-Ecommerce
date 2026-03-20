@@ -43,17 +43,17 @@ function AuthHeaderSection() {
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '5px 12px 5px 6px', borderRadius: 8,
-            border: '1.5px solid rgba(26,122,94,0.3)',
-            background: showMenu ? '#edfaf4' : '#fff',
+            border: '1.5px solid rgba(185,28,28,0.3)',
+            background: showMenu ? '#fef2f2' : '#fff',
             cursor: 'pointer', transition: 'all 0.15s',
             fontFamily: "'DM Sans',sans-serif",
           }}
-          onMouseEnter={e => e.currentTarget.style.background = '#edfaf4'}
+          onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
           onMouseLeave={e => { if (!showMenu) e.currentTarget.style.background = '#fff' }}
         >
           <div style={{
             width: 26, height: 26, borderRadius: '50%',
-            background: 'linear-gradient(135deg,#1a7a5e,#2db68a)',
+            background: 'linear-gradient(135deg,#b91c1c,#dc2626)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 10, fontWeight: 700, color: '#fff',
             fontFamily: "'Syne',sans-serif", flexShrink: 0,
@@ -165,8 +165,8 @@ function Toast({ toasts, removeToast }) {
   return (
     <div style={{ position:'fixed', top:28, left:'50%', transform:'translateX(-50%)', zIndex:9999, display:'flex', flexDirection:'column', alignItems:'center', gap:10, pointerEvents:'none', width:'max-content', maxWidth:'90vw' }}>
       {toasts.map((t, idx) => {
-        const accent = t.type==='success'?'#1a7a5e':t.type==='error'?'#b94a48':'#4263eb'
-        const bg     = t.type==='success'?'#edfaf4':t.type==='error'?'#fdf2f2':'#eef2ff'
+        const accent = t.type==='success'?'#b91c1c':t.type==='error'?'#b94a48':'#4263eb'
+        const bg     = t.type==='success'?'#fef2f2':t.type==='error'?'#fdf2f2':'#eef2ff'
         const icon   = t.type==='success'?'✓':t.type==='error'?'✕':'ℹ'
         return (
           <div key={t.id} style={{
@@ -193,9 +193,54 @@ function Toast({ toasts, removeToast }) {
   )
 }
 
-function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout }) {
+// ─── Quantity Stepper Component ───────────────────────────────────────────────
+function QuantityStepper({ quantity, onIncrease, onDecrease, min = 1, max = 99, size = 'md' }) {
+  const isSmall = size === 'sm'
+  const btnSize = isSmall ? 26 : 32
+  const fontSize = isSmall ? 11 : 13
+  const numWidth = isSmall ? 32 : 40
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:0, border:'1.5px solid #e8e8e8', borderRadius:9, overflow:'hidden', background:'#fff' }}>
+      <button
+        onClick={onDecrease}
+        disabled={quantity <= min}
+        style={{
+          width:btnSize, height:btnSize, border:'none', background: quantity <= min ? '#f9f9f9' : '#fff',
+          cursor: quantity <= min ? 'not-allowed' : 'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize: isSmall ? 14 : 16, color: quantity <= min ? '#ccc' : '#b91c1c',
+          fontWeight:700, transition:'all 0.15s', flexShrink:0,
+        }}
+        onMouseEnter={e => { if (quantity > min) e.currentTarget.style.background='#fef2f2' }}
+        onMouseLeave={e => e.currentTarget.style.background = quantity <= min ? '#f9f9f9' : '#fff'}
+      >−</button>
+      <div style={{
+        width:numWidth, textAlign:'center',
+        fontFamily:"'Syne',sans-serif", fontSize, fontWeight:700,
+        color:'#1a1a1a', borderLeft:'1px solid #f0f0f0', borderRight:'1px solid #f0f0f0',
+        padding: isSmall ? '4px 0' : '6px 0', userSelect:'none',
+      }}>{quantity}</div>
+      <button
+        onClick={onIncrease}
+        disabled={quantity >= max}
+        style={{
+          width:btnSize, height:btnSize, border:'none', background: quantity >= max ? '#f9f9f9' : '#fff',
+          cursor: quantity >= max ? 'not-allowed' : 'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize: isSmall ? 14 : 16, color: quantity >= max ? '#ccc' : '#b91c1c',
+          fontWeight:700, transition:'all 0.15s', flexShrink:0,
+        }}
+        onMouseEnter={e => { if (quantity < max) e.currentTarget.style.background='#fef2f2' }}
+        onMouseLeave={e => e.currentTarget.style.background = quantity >= max ? '#f9f9f9' : '#fff'}
+      >+</button>
+    </div>
+  )
+}
+
+function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout, onUpdateQuantity }) {
   const fmt = n => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(n)
-  const total = cart.reduce((sum, item) => sum + (item.price || 0), 0)
+  const total = cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0)
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0)
   useEffect(() => {
     const h = e => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', h)
@@ -205,13 +250,13 @@ function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout }
   return (
     <>
       <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.38)', backdropFilter:'blur(4px)', zIndex:7000, animation:'fadeIn 0.22s ease' }} />
-      <div style={{ position:'fixed', top:0, right:0, bottom:0, width:420, maxWidth:'100vw', background:'#fff', zIndex:7001, display:'flex', flexDirection:'column', boxShadow:'-8px 0 48px rgba(0,0,0,0.16)', animation:'drawerSlide 0.32s cubic-bezier(0.34,1.2,0.64,1) both' }}>
+      <div style={{ position:'fixed', top:0, right:0, bottom:0, width:440, maxWidth:'100vw', background:'#fff', zIndex:7001, display:'flex', flexDirection:'column', boxShadow:'-8px 0 48px rgba(0,0,0,0.16)', animation:'drawerSlide 0.32s cubic-bezier(0.34,1.2,0.64,1) both' }}>
         <div style={{ padding:'20px 22px 16px', borderBottom:'1px solid #f0f0f0', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, background:'#fafaf8' }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <div style={{ width:40, height:40, borderRadius:11, background:'#f4b400', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, boxShadow:'0 3px 12px rgba(244,180,0,0.3)' }}>🛒</div>
+            <div style={{ width:40, height:40, borderRadius:11, background:'#b91c1c', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, boxShadow:'0 3px 12px rgba(185,28,28,0.3)' }}>🛒</div>
             <div>
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:17, color:'#1a1a1a' }}>Your Cart</div>
-              <div style={{ fontSize:12, color:'#bbb', fontFamily:"'DM Sans',sans-serif", marginTop:1 }}>{cart.length === 0 ? 'No items yet' : `${cart.length} item${cart.length > 1 ? 's' : ''} added`}</div>
+              <div style={{ fontSize:12, color:'#bbb', fontFamily:"'DM Sans',sans-serif", marginTop:1 }}>{cart.length === 0 ? 'No items yet' : `${cart.length} item${cart.length > 1 ? 's' : ''} · ${totalItems} unit${totalItems !== 1 ? 's' : ''}`}</div>
             </div>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -232,21 +277,21 @@ function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout }
               <div style={{ fontSize:64, filter:'grayscale(0.3)', animation:'floatUp 3s ease infinite' }}>🛒</div>
               <div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:700, color:'#1a1a1a' }}>Your cart is empty</div>
               <div style={{ fontSize:13.5, color:'#bbb', fontFamily:"'DM Sans',sans-serif", lineHeight:1.6 }}>Browse our products and add items to get started!</div>
-              <button onClick={onClose} style={{ marginTop:6, padding:'11px 28px', borderRadius:11, background:'#1a7a5e', color:'#fff', border:'none', fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:600, cursor:'pointer', boxShadow:'0 4px 14px rgba(26,122,94,0.28)', transition:'all 0.15s' }}
-                onMouseEnter={e=>{e.currentTarget.style.background='#178a68';e.currentTarget.style.transform='translateY(-1px)'}}
-                onMouseLeave={e=>{e.currentTarget.style.background='#1a7a5e';e.currentTarget.style.transform='none'}}>Continue Shopping</button>
+              <button onClick={onClose} style={{ marginTop:6, padding:'11px 28px', borderRadius:11, background:'#b91c1c', color:'#fff', border:'none', fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:600, cursor:'pointer', boxShadow:'0 4px 14px rgba(185,28,28,0.28)', transition:'all 0.15s' }}
+                onMouseEnter={e=>{e.currentTarget.style.background='#991b1b';e.currentTarget.style.transform='translateY(-1px)'}}
+                onMouseLeave={e=>{e.currentTarget.style.background='#b91c1c';e.currentTarget.style.transform='none'}}>Continue Shopping</button>
             </div>
-          ) : cart.map((item, i) => <CartItem key={item.id} item={item} index={i} onRemove={onRemove} fmt={fmt} />)}
+          ) : cart.map((item, i) => <CartItem key={item.id} item={item} index={i} onRemove={onRemove} onUpdateQuantity={onUpdateQuantity} fmt={fmt} />)}
         </div>
 
         {cart.length > 0 && (
           <div style={{ borderTop:'1px solid #f0f0f0', padding:'18px 22px 24px', flexShrink:0, background:'#fff' }}>
             <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, fontFamily:"'DM Sans',sans-serif", color:'#999' }}>
-                <span>Subtotal ({cart.length} items)</span><span style={{ fontWeight:600, color:'#555' }}>{fmt(total)}</span>
+                <span>Subtotal ({totalItems} unit{totalItems !== 1 ? 's' : ''})</span><span style={{ fontWeight:600, color:'#555' }}>{fmt(total)}</span>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, fontFamily:"'DM Sans',sans-serif", color:'#999' }}>
-                <span>Delivery</span><span style={{ fontWeight:600, color:'#1a7a5e' }}>FREE</span>
+                <span>Delivery</span><span style={{ fontWeight:600, color:'#b91c1c' }}>FREE</span>
               </div>
               <div style={{ height:1, background:'#f0f0f0', margin:'2px 0' }}/>
               <div style={{ display:'flex', justifyContent:'space-between' }}>
@@ -261,12 +306,11 @@ function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout }
                   window.location.href = '/register?from=productlist'
                 } else {
                   onProceedToCheckout()
-                  // window.location.href = '/checkout'
                 }
               }}
-              style={{ width:'100%', padding:'14px', borderRadius:12, background:'linear-gradient(135deg,#1a7a5e,#22997a)', color:'#fff', border:'none', fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:9, boxShadow:'0 6px 22px rgba(26,122,94,0.32)', transition:'all 0.2s ease' }}
-              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 10px 30px rgba(26,122,94,0.4)'}}
-              onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 6px 22px rgba(26,122,94,0.32)'}}>
+              style={{ width:'100%', padding:'14px', borderRadius:12, background:'linear-gradient(135deg,#b91c1c,#dc2626)', color:'#fff', border:'none', fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:9, boxShadow:'0 6px 22px rgba(185,28,28,0.32)', transition:'all 0.2s ease' }}
+              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 10px 30px rgba(185,28,28,0.4)'}}
+              onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 6px 22px rgba(185,28,28,0.32)'}}>
               <span style={{ fontSize:18 }}>✦</span> Proceed to Checkout
             </button>
             <button onClick={onClose} style={{ width:'100%', padding:'11px', borderRadius:12, border:'1px solid #e8e8e8', background:'#fff', color:'#888', fontFamily:"'DM Sans',sans-serif", fontSize:13.5, fontWeight:500, cursor:'pointer', marginTop:10, transition:'background 0.15s' }}
@@ -278,26 +322,41 @@ function CartDrawer({ cart, onClose, onRemove, onClearAll, onProceedToCheckout }
   )
 }
 
-function CartItem({ item, index, onRemove, fmt }) {
+function CartItem({ item, index, onRemove, onUpdateQuantity, fmt }) {
   const [removing, setRemoving] = useState(false)
   const handleRemove = () => { setRemoving(true); setTimeout(() => onRemove(item.id), 300) }
   const hue = (item.name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360
+  const qty = item.quantity || 1
+  const lineTotal = (item.price || 0) * qty
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 22px', borderBottom:'1px solid #f8f8f6', opacity:removing?0:1, transform:removing?'translateX(30px)':'none', transition:'opacity 0.28s ease, transform 0.28s ease', animation:'cartItemIn 0.3s cubic-bezier(0.34,1.3,0.64,1) both', animationDelay:`${index * 0.05}s` }}>
-      <div style={{ width:52, height:52, borderRadius:11, flexShrink:0, background:`linear-gradient(145deg,hsl(${hue},20%,95%),hsl(${hue},24%,89%))`, border:`1px solid hsl(${hue},18%,86%)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>📦</div>
-      <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13.5, fontWeight:600, color:'#1a1a1a', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>{item.name}</div>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:700, color:'#e03030' }}>{fmt(item.price)}</div>
+    <div style={{ display:'flex', flexDirection:'column', gap:0, padding:'12px 22px', borderBottom:'1px solid #f8f8f6', opacity:removing?0:1, transform:removing?'translateX(30px)':'none', transition:'opacity 0.28s ease, transform 0.28s ease', animation:'cartItemIn 0.3s cubic-bezier(0.34,1.3,0.64,1) both', animationDelay:`${index * 0.05}s` }}>
+      <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+        <div style={{ width:52, height:52, borderRadius:11, flexShrink:0, background:`linear-gradient(145deg,hsl(${hue},20%,95%),hsl(${hue},24%,89%))`, border:`1px solid hsl(${hue},18%,86%)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>📦</div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13.5, fontWeight:600, color:'#1a1a1a', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:3 }}>{item.name}</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:13, fontWeight:600, color:'#999' }}>₹{(item.price||0).toLocaleString('en-IN')} × {qty}</div>
+        </div>
+        <button onClick={handleRemove} title="Remove from cart" style={{ flexShrink:0, width:30, height:30, borderRadius:8, border:'1px solid rgba(185,74,72,0.2)', background:'#fdf2f2', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, color:'#b94a48', transition:'all 0.15s ease' }}
+          onMouseEnter={e=>{e.currentTarget.style.background='#fce0e0';e.currentTarget.style.borderColor='rgba(185,74,72,0.45)';e.currentTarget.style.transform='scale(1.1)'}}
+          onMouseLeave={e=>{e.currentTarget.style.background='#fdf2f2';e.currentTarget.style.borderColor='rgba(185,74,72,0.2)';e.currentTarget.style.transform='scale(1)'}}>🗑️</button>
       </div>
-      <button onClick={handleRemove} title="Remove from cart" style={{ flexShrink:0, width:32, height:32, borderRadius:8, border:'1px solid rgba(185,74,72,0.2)', background:'#fdf2f2', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, color:'#b94a48', transition:'all 0.15s ease' }}
-        onMouseEnter={e=>{e.currentTarget.style.background='#fce0e0';e.currentTarget.style.borderColor='rgba(185,74,72,0.45)';e.currentTarget.style.transform='scale(1.1)'}}
-        onMouseLeave={e=>{e.currentTarget.style.background='#fdf2f2';e.currentTarget.style.borderColor='rgba(185,74,72,0.2)';e.currentTarget.style.transform='scale(1)'}}>🗑️</button>
+      {/* Quantity row */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:10, paddingLeft:66 }}>
+        <QuantityStepper
+          size="sm"
+          quantity={qty}
+          onDecrease={() => onUpdateQuantity(item.id, qty - 1)}
+          onIncrease={() => onUpdateQuantity(item.id, qty + 1)}
+          max={item.stock || 99}
+        />
+        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:800, color:'#e03030' }}>{fmt(lineTotal)}</div>
+      </div>
     </div>
   )
 }
 
 // ─── Quick View Modal ─────────────────────────────────────────────────────────
-function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWishlisted }) {
+function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWishlisted, cartItem, onUpdateQuantity }) {
   const safePrice = !isNaN(parseFloat(product.price)) ? parseFloat(product.price) : null
   const safeOriginal = !isNaN(parseFloat(product.original_price)) ? parseFloat(product.original_price) : null
   const hue = (product.name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360
@@ -306,6 +365,8 @@ function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWish
   const disc = safePrice && safeOriginal && safeOriginal > safePrice ? Math.round((1 - safePrice / safeOriginal) * 100) : 0
   const [activeImg, setActiveImg] = useState(0)
   const images = product.product_images || []
+  const inCart = !!cartItem
+  const qty = cartItem?.quantity || 1
 
   useEffect(() => {
     const h = e => { if (e.key === 'Escape') onClose() }
@@ -321,7 +382,7 @@ function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWish
       <div style={{ background:'#fff', borderRadius:22, width:'100%', maxWidth:840, boxShadow:'0 40px 100px rgba(0,0,0,0.28)', overflow:'hidden', maxHeight:'92vh', display:'flex', flexDirection:'column', animation:'qvIn 0.32s cubic-bezier(0.34,1.4,0.64,1) both' }}>
         <div style={{ padding:'13px 20px', borderBottom:'1px solid #f2f2f0', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, background:'#fafaf8' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <span style={{ fontSize:10, fontWeight:700, color:'#1a7a5e', letterSpacing:'0.12em', textTransform:'uppercase', fontFamily:"'DM Sans',sans-serif" }}>Quick View</span>
+            <span style={{ fontSize:10, fontWeight:700, color:'#b91c1c', letterSpacing:'0.12em', textTransform:'uppercase', fontFamily:"'DM Sans',sans-serif" }}>Quick View</span>
             <span style={{ width:3, height:3, borderRadius:'50%', background:'#ddd', display:'inline-block' }} />
             <span style={{ fontSize:12, color:'#bbb', fontFamily:"'DM Sans',sans-serif" }}>{product.category || '—'}</span>
           </div>
@@ -355,7 +416,7 @@ function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWish
                 <div style={{ position:'absolute', bottom:14, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6 }}>
                   {images.map((_, i) => (
                     <div key={i} onClick={() => setActiveImg(i)}
-                      style={{ width:i===activeImg?22:7, height:7, borderRadius:4, background:i===activeImg?'#1a7a5e':'rgba(0,0,0,0.14)', cursor:'pointer', transition:'all 0.22s ease' }}
+                      style={{ width:i===activeImg?22:7, height:7, borderRadius:4, background:i===activeImg?'#b91c1c':'rgba(0,0,0,0.14)', cursor:'pointer', transition:'all 0.22s ease' }}
                     />
                   ))}
                 </div>
@@ -373,7 +434,7 @@ function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWish
           <div style={{ flex:1, padding:'28px 30px', overflowY:'auto', display:'flex', flexDirection:'column', gap:18 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
               {product.brand && (
-                <span style={{ fontSize:11, fontWeight:700, color:'#1a7a5e', fontFamily:"'DM Sans',sans-serif", letterSpacing:'0.08em', textTransform:'uppercase', background:'#edfaf4', padding:'3px 9px', borderRadius:5 }}>{product.brand}</span>
+                <span style={{ fontSize:11, fontWeight:700, color:'#b91c1c', fontFamily:"'DM Sans',sans-serif", letterSpacing:'0.08em', textTransform:'uppercase', background:'#fef2f2', padding:'3px 9px', borderRadius:5 }}>{product.brand}</span>
               )}
               {product.stock > 0 && product.stock <= 5 && <span style={{ fontSize:11, fontWeight:700, color:'#c2570a', background:'#fef3ea', padding:'3px 9px', borderRadius:5, fontFamily:"'DM Sans',sans-serif" }}>Only {product.stock} left!</span>}
               {product.stock === 0 && <span style={{ fontSize:11, fontWeight:700, color:'#b94a48', background:'#fdf2f2', padding:'3px 9px', borderRadius:5, fontFamily:"'DM Sans',sans-serif" }}>Out of Stock</span>}
@@ -399,7 +460,7 @@ function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWish
               {safeOriginal && safeOriginal > safePrice && (
                 <>
                   <span style={{ fontSize:16, color:'#ccc', textDecoration:'line-through', fontFamily:"'DM Sans',sans-serif" }}>{fmt(safeOriginal)}</span>
-                  <span style={{ fontSize:12, fontWeight:700, color:'#1a7a5e', background:'#edfaf4', padding:'3px 8px', borderRadius:5, fontFamily:"'DM Sans',sans-serif" }}>Save {fmt(safeOriginal - safePrice)}</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:'#b91c1c', background:'#fef2f2', padding:'3px 8px', borderRadius:5, fontFamily:"'DM Sans',sans-serif" }}>Save {fmt(safeOriginal - safePrice)}</span>
                 </>
               )}
             </div>
@@ -417,14 +478,28 @@ function QuickViewModal({ product, onClose, onAddToCart, onAddToWishlist, isWish
               ))}
             </div>
             <div style={{ flex:1 }} />
+
+            {/* Quantity selector in Quick View (shown only when item is in cart) */}
+            {inCart && product.stock !== 0 && (
+              <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#fef2f2', borderRadius:11, border:'1px solid rgba(185,28,28,0.15)' }}>
+                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, color:'#b91c1c', flex:1 }}>Qty in cart:</span>
+                <QuantityStepper
+                  quantity={qty}
+                  onDecrease={() => onUpdateQuantity(product.id, qty - 1)}
+                  onIncrease={() => onUpdateQuantity(product.id, qty + 1)}
+                  max={product.stock || 99}
+                />
+              </div>
+            )}
+
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
               {product.stock === 0
                 ? <button disabled style={{ width:'100%', padding:13, background:'#f5f5f3', color:'#ccc', border:'1.5px solid #efefef', borderRadius:12, fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:600, cursor:'not-allowed' }}>Out of Stock</button>
-                : <button onClick={() => { onAddToCart(product); onClose() }}
-                    style={{ width:'100%', padding:13, background:'#f4b400', color:'#1a1a1a', border:'none', borderRadius:12, fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:700, cursor:'pointer', transition:'all 0.2s ease', boxShadow:'0 3px 12px rgba(244,180,0,0.25)', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
-                    onMouseEnter={e=>{e.currentTarget.style.background='#e0a500';e.currentTarget.style.boxShadow='0 6px 20px rgba(244,180,0,0.4)';e.currentTarget.style.transform='translateY(-1px)'}}
-                    onMouseLeave={e=>{e.currentTarget.style.background='#f4b400';e.currentTarget.style.boxShadow='0 3px 12px rgba(244,180,0,0.25)';e.currentTarget.style.transform='none'}}>
-                    <span style={{ fontSize:16 }}>🛒</span> Add To Cart
+                : <button onClick={() => { if (!inCart) { onAddToCart(product); } onClose() }}
+                    style={{ width:'100%', padding:13, background: inCart ? '#fdf2f2' : '#f4b400', color: inCart ? '#b94a48' : '#1a1a1a', border: inCart ? '1.5px solid rgba(185,74,72,0.3)' : 'none', borderRadius:12, fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:700, cursor:'pointer', transition:'all 0.2s ease', boxShadow: inCart ? 'none' : '0 3px 12px rgba(244,180,0,0.25)', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+                    onMouseEnter={e=>{e.currentTarget.style.opacity='0.85';e.currentTarget.style.transform='translateY(-1px)'}}
+                    onMouseLeave={e=>{e.currentTarget.style.opacity='1';e.currentTarget.style.transform='none'}}>
+                    <span style={{ fontSize:16 }}>{inCart ? '✓' : '🛒'}</span> {inCart ? 'Already in Cart' : 'Add To Cart'}
                   </button>
               }
               <button onClick={() => onAddToWishlist(product)}
@@ -453,12 +528,12 @@ function QVThumb({ imageData, icon, hue, isActive, onClick }) {
     <div onClick={onClick} style={{
       flex:1, height:64, borderRadius:12,
       background:`linear-gradient(135deg,hsl(${hue},18%,${isActive?87:93}%),hsl(${hue},22%,${isActive?81:89}%))`,
-      border:`2px solid ${isActive ? '#1a7a5e' : 'transparent'}`,
+      border:`2px solid ${isActive ? '#b91c1c' : 'transparent'}`,
       outline:`1px solid ${isActive ? 'transparent' : `hsl(${hue},15%,87%)`}`,
       display:'flex', alignItems:'center', justifyContent:'center',
       fontSize:24, cursor:'pointer', overflow:'hidden',
       transition:'all 0.2s ease',
-      boxShadow:isActive?'0 3px 12px rgba(26,122,94,0.2)':'none',
+      boxShadow:isActive?'0 3px 12px rgba(185,28,28,0.2)':'none',
       transform:isActive?'scale(1.05)':'scale(1)',
     }}>
       {src ? <img src={src} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : icon}
@@ -517,20 +592,20 @@ function NavCategoryDropdown({ category, allProducts, onProductSelect, onCategor
   const products = allProducts.filter(p => p.category_id === category.category_id)
   const hue = (category.category_name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360
   return (
-    <div style={{ position:'absolute', top:'100%', left:'50%', transform:'translateX(-50%)', zIndex:3000, background:'#fff', borderRadius:'0 0 14px 14px', boxShadow:'0 20px 60px rgba(0,0,0,0.13)', border:'1px solid #efefef', borderTop:`2px solid hsl(${hue},55%,42%)`, minWidth:300, maxWidth:420, animation:'fadeUp 0.16s ease both', overflow:'hidden' }}>
+    <div style={{ position:'absolute', top:'100%', left:'50%', transform:'translateX(-50%)', zIndex:3000, background:'#fff', borderRadius:'0 0 14px 14px', boxShadow:'0 20px 60px rgba(0,0,0,0.13)', border:'1px solid #efefef', borderTop:'2px solid #b91c1c', minWidth:300, maxWidth:420, animation:'fadeUp 0.16s ease both', overflow:'hidden' }}>
       <div onClick={() => onCategoryClick(category)} style={{ padding:'12px 16px', background:`hsl(${hue},28%,97%)`, borderBottom:'1px solid #f0f0f0', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between' }}
         onMouseEnter={e => e.currentTarget.style.background=`hsl(${hue},35%,93%)`} onMouseLeave={e => e.currentTarget.style.background=`hsl(${hue},28%,97%)`}>
-        <span style={{ fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:700, color:`hsl(${hue},45%,32%)`, letterSpacing:'0.07em', textTransform:'uppercase' }}>{category.category_name}</span>
-        <span style={{ fontSize:11, color:`hsl(${hue},45%,52%)`, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>View all {products.length} →</span>
+        <span style={{ fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:700, color:'#b91c1c', letterSpacing:'0.07em', textTransform:'uppercase' }}>{category.category_name}</span>
+        <span style={{ fontSize:11, color:'#b91c1c', fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>View all {products.length} →</span>
       </div>
       <div style={{ maxHeight:320, overflowY:'auto' }}>
         {products.length === 0
           ? <div style={{ padding:'24px 16px', textAlign:'center', color:'#ccc', fontFamily:"'DM Sans',sans-serif", fontSize:13 }}>📭 No products</div>
           : products.map(p => (
               <div key={p.product_id} onClick={() => onProductSelect(p, category)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', cursor:'pointer', borderBottom:'1px solid #f8f8f8', transition:'background 0.1s' }}
-                onMouseEnter={e => e.currentTarget.style.background='#f7fdf9'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                onMouseEnter={e => e.currentTarget.style.background='#fef2f2'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                 <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13.5, fontWeight:500, color:'#1a1a1a', flex:1, marginRight:12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.product_name}</span>
-                <span style={{ fontFamily:"'Syne',sans-serif", fontSize:13, fontWeight:700, color:'#1a7a5e', flexShrink:0 }}>₹{parseFloat(p.price).toLocaleString('en-IN')}</span>
+                <span style={{ fontFamily:"'Syne',sans-serif", fontSize:13, fontWeight:700, color:'#b91c1c', flexShrink:0 }}>₹{parseFloat(p.price).toLocaleString('en-IN')}</span>
               </div>
             ))
         }
@@ -555,12 +630,12 @@ function BrowseMegaMenu({ onCategorySelect, onProductSelect }) {
       <button className="site-browse-btn"
         onMouseEnter={() => { clearTimeout(timer.current); setOpen(true) }}
         onClick={() => setOpen(o => !o)}
-        style={{ background:open?'#f0f9f5':undefined, color:open?'#1a7a5e':undefined }}>
+        style={{ background:open?'#fef2f2':undefined, color:open?'#b91c1c':undefined }}>
         <span style={{ fontSize:15 }}>☰</span> Browse All Categories
-        <span style={{ fontSize:9, marginLeft:4, color:open?'#1a7a5e':'#bbb' }}>{open?'▲':'▼'}</span>
+        <span style={{ fontSize:9, marginLeft:4, color:open?'#b91c1c':'#bbb' }}>{open?'▲':'▼'}</span>
       </button>
       {open && (
-        <div onMouseEnter={() => clearTimeout(timer.current)} style={{ position:'absolute', top:'100%', left:0, zIndex:2000, display:'flex', minWidth:560, background:'#fff', borderRadius:'0 0 14px 14px', boxShadow:'0 20px 60px rgba(0,0,0,0.12)', border:'1px solid #efefef', borderTop:'2px solid #1a7a5e', overflow:'hidden', animation:'fadeUp 0.18s ease both' }}>
+        <div onMouseEnter={() => clearTimeout(timer.current)} style={{ position:'absolute', top:'100%', left:0, zIndex:2000, display:'flex', minWidth:560, background:'#fff', borderRadius:'0 0 14px 14px', boxShadow:'0 20px 60px rgba(0,0,0,0.12)', border:'1px solid #efefef', borderTop:'2px solid #b91c1c', overflow:'hidden', animation:'fadeUp 0.18s ease both' }}>
           <div style={{ width:220, flexShrink:0, borderRight:'1px solid #f0f0f0', overflowY:'auto', maxHeight:420, background:'#fafaf8' }}>
             {categoriesLoading
               ? <div style={{ padding:'24px 20px', color:'#bbb', fontSize:13, fontFamily:"'DM Sans',sans-serif" }}>Loading…</div>
@@ -569,26 +644,26 @@ function BrowseMegaMenu({ onCategorySelect, onProductSelect }) {
                   const h = hue(cat.category_name)
                   return (
                     <div key={cat.category_id} onMouseEnter={() => setHoveredCat(cat)} onClick={() => { onCategorySelect(cat); setOpen(false) }}
-                      style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 18px', cursor:'pointer', background:isA?'#fff':'transparent', borderLeft:`3px solid ${isA?'#1a7a5e':'transparent'}`, transition:'all 0.12s ease' }}>
+                      style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 18px', cursor:'pointer', background:isA?'#fff':'transparent', borderLeft:`3px solid ${isA?'#b91c1c':'transparent'}`, transition:'all 0.12s ease' }}>
                       <span style={{ width:30, height:30, borderRadius:8, flexShrink:0, background:`hsl(${h},30%,93%)`, border:`1px solid hsl(${h},25%,84%)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>{cat.category_name.charAt(0)}</span>
                       <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13.5, fontWeight:isA?600:400, color:isA?'#1a1a1a':'#444', flex:1 }}>{cat.category_name}</span>
-                      {isA && <span style={{ fontSize:10, color:'#1a7a5e' }}>›</span>}
+                      {isA && <span style={{ fontSize:10, color:'#b91c1c' }}>›</span>}
                     </div>
                   )
                 })
             }
           </div>
           <div style={{ flex:1, padding:'16px 18px', minWidth:0, maxHeight:420, overflowY:'auto' }}>
-            {hoveredCat && <div style={{ fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:700, color:'#1a7a5e', marginBottom:12, letterSpacing:'0.06em', textTransform:'uppercase' }}>{hoveredCat.category_name}</div>}
+            {hoveredCat && <div style={{ fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:700, color:'#b91c1c', marginBottom:12, letterSpacing:'0.06em', textTransform:'uppercase' }}>{hoveredCat.category_name}</div>}
             {catProducts.length === 0
               ? <div style={{ padding:'28px 0', textAlign:'center', color:'#bbb', fontFamily:"'DM Sans',sans-serif", fontSize:13 }}><div style={{ fontSize:28, marginBottom:8 }}>📭</div>No products</div>
               : catProducts.map(p => (
                   <div key={p.product_id} onClick={() => { onProductSelect(p, hoveredCat); setOpen(false) }}
                     style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', borderRadius:9, border:'1px solid #f0f0f0', background:'#fff', cursor:'pointer', marginBottom:6, transition:'all 0.12s ease' }}
-                    onMouseEnter={e=>{e.currentTarget.style.background='#f0f9f5';e.currentTarget.style.borderColor='rgba(26,122,94,0.2)'}}
+                    onMouseEnter={e=>{e.currentTarget.style.background='#fef2f2';e.currentTarget.style.borderColor='rgba(185,28,28,0.2)'}}
                     onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.borderColor='#f0f0f0'}}>
                     <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13.5, fontWeight:500, color:'#1a1a1a', flex:1, marginRight:12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.product_name}</span>
-                    <span style={{ fontFamily:"'Syne',sans-serif", fontSize:13, fontWeight:700, color:'#1a7a5e', flexShrink:0 }}>₹{parseFloat(p.price).toLocaleString('en-IN', { minimumFractionDigits:2 })}</span>
+                    <span style={{ fontFamily:"'Syne',sans-serif", fontSize:13, fontWeight:700, color:'#b91c1c', flexShrink:0 }}>₹{parseFloat(p.price).toLocaleString('en-IN', { minimumFractionDigits:2 })}</span>
                   </div>
                 ))
             }
@@ -644,7 +719,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
 
       <div className="site-mainbar">
         <div className="site-logo" onClick={onHomeClick}>
-          <div className="site-logo-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#1a7a5e" /><text x="14" y="20" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">✦</text></svg></div>
+          <div className="site-logo-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#b91c1c" /><text x="14" y="20" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">✦</text></svg></div>
           <span className="site-logo-name">Shiva Systems</span>
         </div>
         <div className="site-searchbar" ref={searchRef} style={{ position:'relative' }}>
@@ -671,7 +746,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
                   : <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', maxHeight:340, overflowY:'auto' }}>
                       {searchResults.map((p, i) => (
                         <div key={p.product_id} style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 14px', cursor:'pointer', borderBottom:'1px solid #f8f8f8', borderRight:i%2===0?'1px solid #f5f5f5':'none', transition:'background 0.12s' }}
-                          onMouseEnter={e=>e.currentTarget.style.background='#f7fdf9'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                          onMouseEnter={e=>e.currentTarget.style.background='#fef2f2'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                           <div style={{ width:44, height:44, borderRadius:8, flexShrink:0, background:'#f5f5f3', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>📦</div>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, color:'#1a1a1a', marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.product_name}</div>
@@ -686,7 +761,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
                 <div style={{ padding:'10px 14px 8px', fontFamily:"'DM Sans',sans-serif", fontSize:10, fontWeight:700, color:'#ccc', letterSpacing:'0.1em', textTransform:'uppercase', borderBottom:'1px solid #f5f5f5' }}>Suggestions</div>
                 {[searchVal, `${searchVal} best price`, `${searchVal} gaming`, `${searchVal} review`].filter(Boolean).map((s, i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 14px', cursor:'pointer', fontSize:13, color:'#444', fontFamily:"'DM Sans',sans-serif", transition:'all 0.12s' }}
-                    onMouseEnter={e=>{e.currentTarget.style.background='#f7fdf9';e.currentTarget.style.color='#1a7a5e'}}
+                    onMouseEnter={e=>{e.currentTarget.style.background='#fef2f2';e.currentTarget.style.color='#b91c1c'}}
                     onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='#444'}}
                     onClick={() => { setSearchVal(s); doSearch(s) }}>
                     <span style={{ color:'#ddd', fontSize:11 }}>🔍</span>
@@ -809,11 +884,14 @@ function normaliseProduct(p) {
 // ─── Main Products component ──────────────────────────────────────────────────
 export default function Products() {
   const navigate = useNavigate()
-  // ── Page routing — 'products' or 'checkout' ────────────────────────────────
   const [page, setPage] = useState('products')
 
-  // ── Core state ────────────────────────────────────────────────────────────
-  const [cart, setCart]           = useState([])
+  const [cart, setCart]           = useState(() => {
+    try {
+      const saved = localStorage.getItem('cart')
+      return saved ? JSON.parse(saved) : []
+    } catch { return [] }
+  })
   const [wishlist, setWishlist]   = useState([])
   const [cartOpen, setCartOpen]   = useState(false)
 
@@ -864,7 +942,11 @@ export default function Products() {
   const cartCount     = cart.length
   const wishlistCount = wishlist.length
 
-  // ── Checkout page render ──────────────────────────────────────────────────
+  // ── Persist cart to localStorage on every change ─────────────────────────
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
   if (page === 'checkout') {
     return (
       <Checkout
@@ -879,7 +961,6 @@ export default function Products() {
     )
   }
 
-  // Close inline search on outside click
   useEffect(() => {
     const h = e => { if (inlineSearchRef.current && !inlineSearchRef.current.contains(e.target)) setInlineSearchResults(null) }
     document.addEventListener('mousedown', h)
@@ -897,7 +978,6 @@ export default function Products() {
     finally { setInlineSearchLoading(false) }
   }, [])
 
-  // ── Brand filter ──────────────────────────────────────────────────────────
   useEffect(() => {
     setBrandsLoading(true)
     fetch('http://localhost:5000/filter-brand', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ type:'allbrand' }) })
@@ -924,7 +1004,6 @@ export default function Products() {
   }
   const resetBrandFilter = () => { setSelectedBrandIds([]); setBrandFiltered(null) }
 
-  // ── Category filter ───────────────────────────────────────────────────────
   useEffect(() => {
     setApiCategoriesLoading(true)
     fetch('http://localhost:5000/filter-category', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ type:'allcategory' }) })
@@ -954,7 +1033,6 @@ export default function Products() {
   }
   const resetCategoryFilter = () => { setSelectedCategoryIds([]); setCategoryFiltered(null) }
 
-  // ── Navigation helpers ────────────────────────────────────────────────────
   const handleHomeClick = useCallback(() => {
     setSelectedCategoryIds([]); setCategoryFiltered(null)
     setSelectedBrandIds([]); setBrandFiltered(null)
@@ -990,7 +1068,6 @@ export default function Products() {
     else if (crumb.type === 'category' && crumb.payload) handleNavCategorySelect(crumb.payload)
   }, [handleHomeClick, handleNavCategorySelect])
 
-  // ── Product fetch ─────────────────────────────────────────────────────────
   const fetchProducts = useCallback(async (page = 1) => {
     setProductsLoading(true)
     try {
@@ -1015,7 +1092,6 @@ export default function Products() {
 
   useEffect(() => { fetchProducts(currentPage) }, [currentPage, fetchProducts])
 
-  // ── Price filter ──────────────────────────────────────────────────────────
   const fetchFilteredByPrice = useCallback(async (min, max) => {
     if (min === 0 && max === 9999999) { setPriceFiltered(null); return }
     setPriceFilterLoading(true)
@@ -1038,7 +1114,6 @@ export default function Products() {
   const handlePriceMaxChange = val => { priceChanged.current = true; setPriceMax(val) }
   const resetPriceFilter = () => { priceChanged.current = false; setPriceMin(0); setPriceMax(9999999); setPriceFiltered(null) }
 
-  // ── Toasts ────────────────────────────────────────────────────────────────
   const addToast = (message, type = 'success') => {
     const id = Date.now(); setToasts(p => [...p, { id, message, type }])
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500)
@@ -1050,7 +1125,7 @@ export default function Products() {
     setCart(prev => {
       if (prev.find(i => i.id === product.id)) { addToast(`Already in cart — ${product.name}`, 'info'); return prev }
       addToast(`Added to cart — ${product.name}`, 'success')
-      return [...prev, { id:product.id, name:product.name, price:product.price, firstImage:product.firstImage }]
+      return [...prev, { id:product.id, name:product.name, price:product.price, firstImage:product.firstImage, stock:product.stock, quantity:1 }]
     })
   }
   const handleRemoveFromCart = productId => {
@@ -1060,6 +1135,19 @@ export default function Products() {
       return prev.filter(i => i.id !== productId)
     })
   }
+
+  // ── Update quantity in cart ───────────────────────────────────────────────
+  const handleUpdateQuantity = (productId, newQty) => {
+    setCart(prev => {
+      if (newQty < 1) {
+        const item = prev.find(i => i.id === productId)
+        if (item) addToast(`Removed — ${item.name}`, 'info')
+        return prev.filter(i => i.id !== productId)
+      }
+      return prev.map(i => i.id === productId ? { ...i, quantity: Math.min(newQty, i.stock || 99) } : i)
+    })
+  }
+
   const handleClearCart = () => { setCart([]); addToast('Cart cleared', 'info') }
 
   const handleToggleWishlist = product => {
@@ -1071,52 +1159,40 @@ export default function Products() {
     })
   }
 
-  // ── Proceed to checkout handler ───────────────────────────────────────────
-const handleProceedToCheckout = async () => {
-  setCartOpen(false)
-  localStorage.setItem('cart', JSON.stringify(cart))
+  const handleProceedToCheckout = async () => {
+    setCartOpen(false)
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+      const userId = storedUser?.usercode
+                  || storedUser?.user_id
+                  || storedUser?.id
+                  || storedUser?.userId
+                  || storedUser?.user?.id
+                  || storedUser?.user?.user_id
 
-  try {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-
-    // ← covers all common key names your backend might use
-    const userId = storedUser?.usercode
-                ||  storedUser?.user_id
-                || storedUser?.id
-                || storedUser?.userId
-                || storedUser?.user?.id
-                || storedUser?.user?.user_id
-
-    console.log('storedUser:', storedUser)   // remove after confirming
-    console.log('resolved userId:', userId)  // remove after confirming
-
-    if (userId) {
-      const res = await fetch('http://localhost:5000/user-details', {
-        method  : 'POST',
-        headers : { 'Content-Type': 'application/json' },
-        body    : JSON.stringify({ type: 'userDetails', user_id: userId }),
-      })
-      const json = await res.json()
-      console.log('user-details response:', json)  // remove after confirming
-if (json.success && json.data) {
-  // Save API data directly — don't merge, avoid any key collision
-  localStorage.setItem('checkoutUser', JSON.stringify({
-    ...storedUser,
-    mobile : json.data.mobile || '',
-    email  : json.data.email  || storedUser.email || '',
-    name   : json.data.username || storedUser.username || '',
-  }))
-}
-    } else {
-      console.warn('No userId found in localStorage user object')
+      if (userId) {
+        const res = await fetch('http://localhost:5000/user-details', {
+          method  : 'POST',
+          headers : { 'Content-Type': 'application/json' },
+          body    : JSON.stringify({ type: 'userDetails', user_id: userId }),
+        })
+        const json = await res.json()
+        if (json.success && json.data) {
+          localStorage.setItem('checkoutUser', JSON.stringify({
+            ...storedUser,
+            mobile : json.data.mobile || '',
+            email  : json.data.email  || storedUser.email || '',
+            name   : json.data.username || storedUser.username || '',
+          }))
+        }
+      }
+    } catch (err) {
+      console.error('user-details fetch failed:', err)
     }
-  } catch (err) {
-    console.error('user-details fetch failed:', err)  // ← was silently swallowing errors before
+
+    navigate('/checkout')
   }
 
-  navigate('/checkout')
-}
-  // ── Derived product list ──────────────────────────────────────────────────
   const fmt  = n => n != null ? new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(n) : '—'
   const disc = (o, s) => o && s && o > s ? Math.round((1 - s/o) * 100) : 0
 
@@ -1185,49 +1261,49 @@ if (json.success && json.data) {
         .site-topbar-val { color:#111; font-weight:700; font-size:13px; }
         .site-topbar-divider { width:1px; height:28px; background:#e4e4e4; flex-shrink:0; }
         .site-topbar-auth { display:flex; align-items:center; gap:6px; padding-right:10px; }
-        .site-auth-icon-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; background:transparent; border:1.5px solid rgba(26,122,94,0.4); color:#1a7a5e; }
-        .site-auth-icon-btn:hover { background:#edfaf4; border-color:#1a7a5e; transform:translateY(-1px); box-shadow:0 3px 10px rgba(26,122,94,0.15); }
+        .site-auth-icon-btn { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; background:transparent; border:1.5px solid rgba(185,28,28,0.4); color:#b91c1c; }
+        .site-auth-icon-btn:hover { background:#fef2f2; border-color:#b91c1c; transform:translateY(-1px); box-shadow:0 3px 10px rgba(185,28,28,0.15); }
         .site-auth-icon-btn svg { flex-shrink:0; }
-        .site-auth-icon-register { background:#1a7a5e; border-color:#1a7a5e; color:#fff; box-shadow:0 2px 8px rgba(26,122,94,0.25); }
-        .site-auth-icon-register:hover { background:#178a68; border-color:#178a68; box-shadow:0 4px 14px rgba(26,122,94,0.35); }
+        .site-auth-icon-register { background:#b91c1c; border-color:#b91c1c; color:#fff; box-shadow:0 2px 8px rgba(185,28,28,0.25); }
+        .site-auth-icon-register:hover { background:#991b1b; border-color:#991b1b; box-shadow:0 4px 14px rgba(185,28,28,0.35); }
         .site-mainbar { padding:14px 24px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
         .site-logo { display:flex; align-items:center; gap:10px; cursor:pointer; flex-shrink:0; text-decoration:none; }
         .site-logo-icon { display:flex; }
         .site-logo-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:#1a1a1a; }
         .site-searchbar { flex:1; min-width:280px; max-width:860px; display:flex; align-items:stretch; border:1.5px solid #e4e4e4; border-radius:9px; overflow:hidden; height:48px; transition:border-color 0.2s ease; }
-        .site-searchbar:focus-within { border-color:rgba(26,122,94,0.42); }
+        .site-searchbar:focus-within { border-color:rgba(185,28,28,0.42); }
         .site-search-cat { display:flex; align-items:center; background:#f6f6f4; border-right:1px solid #e8e8e8; padding:0 12px; position:relative; min-width:136px; }
         .site-search-catselect { background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:#444; cursor:pointer; padding-right:18px; width:100%; appearance:none; }
         .site-search-canarrow { position:absolute; right:10px; color:#aaa; font-size:10px; pointer-events:none; }
         .site-search-divider { width:1px; background:#e8e8e8; flex-shrink:0; }
         .site-search-input { flex:1; border:none; outline:none; padding:0 16px; font-family:'DM Sans',sans-serif; font-size:14px; color:#333; background:#fff; }
         .site-search-input::placeholder { color:#ccc; }
-        .site-search-btn { background:#1a7a5e; color:#fff; border:none; padding:0 22px; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; display:flex; align-items:center; gap:6px; }
-        .site-search-btn:hover { background:#178a68; }
+        .site-search-btn { background:#b91c1c; color:#fff; border:none; padding:0 22px; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+        .site-search-btn:hover { background:#991b1b; }
         .site-header-actions { display:flex; align-items:center; gap:8px; margin-left:auto; flex-shrink:0; }
         .site-hdr-action-btn { display:flex; align-items:center; gap:9px; background:none; border:none; cursor:pointer; padding:8px 10px; border-radius:9px; transition:background 0.15s; font-family:'DM Sans',sans-serif; font-size:12px; color:#444; position:relative; }
         .site-hdr-action-btn:hover { background:#f5f5f3; }
         .site-hdr-icon { font-size:20px; }
         .site-hdr-action-label { text-align:left; font-size:12px; color:#666; line-height:1.5; }
         .site-hdr-action-label strong { display:block; font-size:13px; color:#1a1a1a; }
-        .site-hdr-badge { position:absolute; top:4px; right:4px; background:#1a7a5e; color:#fff; font-size:9px; font-weight:800; min-width:17px; height:17px; border-radius:9px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; padding:0 3px; font-family:'DM Sans',sans-serif; }
+        .site-hdr-badge { position:absolute; top:4px; right:4px; background:#b91c1c; color:#fff; font-size:9px; font-weight:800; min-width:17px; height:17px; border-radius:9px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; padding:0 3px; font-family:'DM Sans',sans-serif; }
         .site-cart-btn { border:1.5px solid #e8e8e8 !important; border-radius:10px !important; }
-        .site-cart-btn:hover { background:#f0f9f5 !important; border-color:rgba(26,122,94,0.3) !important; }
+        .site-cart-btn:hover { background:#fef2f2 !important; border-color:rgba(185,28,28,0.3) !important; }
         .site-navbar { background:#fff; border-top:1px solid #f0f0f0; padding:0 24px; display:flex; align-items:stretch; min-height:44px; }
         .site-browse-btn { display:flex; align-items:center; gap:8px; background:none; border:none; border-right:1px solid #f0f0f0; padding:0 18px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:#222; cursor:pointer; white-space:nowrap; transition:color 0.15s,background 0.15s; }
-        .site-browse-btn:hover { color:#1a7a5e; background:#f7fdf9; }
+        .site-browse-btn:hover { color:#b91c1c; background:#fef2f2; }
         .site-nav-divider { width:1px; background:#f0f0f0; margin:8px 0; }
         .site-nav-links { display:flex; align-items:stretch; flex:1; overflow-x:auto; scrollbar-width:none; }
         .site-nav-links::-webkit-scrollbar { display:none; }
         .site-nav-link { display:flex; align-items:center; gap:3px; padding:0 14px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:#444; text-decoration:none; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.15s; }
-        .site-nav-link:hover,.site-nav-link.active { color:#1a7a5e; border-bottom-color:#1a7a5e; }
+        .site-nav-link:hover,.site-nav-link.active { color:#b91c1c; border-bottom-color:#b91c1c; }
         .site-nav-link.active { font-weight:600; }
         .page-title-bar { background:#fff; padding:20px 24px 16px; border-bottom:1px solid #f0f0f0; text-align:center; }
         .page-title-text { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; color:#1a1a1a; margin:0 0 5px; }
         .page-breadcrumb { font-size:13px; color:#bbb; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0; }
         .breadcrumb-link { color:#bbb; text-decoration:none; font-family:'DM Sans',sans-serif; }
-        .breadcrumb-link.clickable { color:#1a7a5e; cursor:pointer; font-weight:500; transition:color 0.15s; }
-        .breadcrumb-link.clickable:hover { color:#0f5c45; text-decoration:underline; }
+        .breadcrumb-link.clickable { color:#b91c1c; cursor:pointer; font-weight:500; transition:color 0.15s; }
+        .breadcrumb-link.clickable:hover { color:#991b1b; text-decoration:underline; }
         .breadcrumb-link.active { color:#555; font-weight:600; cursor:default; }
         .breadcrumb-sep { color:#ddd; margin:0 4px; user-select:none; }
         .shop-layout { display:flex; align-items:flex-start; background:#f2f2f0; min-height:600px; }
@@ -1240,18 +1316,18 @@ if (json.success && json.data) {
         .filter-body { padding:4px 20px 16px; animation:fadeIn 0.15s ease; }
         .price-inputs { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
         .price-input { width:78px; padding:6px 10px; border:1.5px solid #e8e8e8; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:13px; color:#333; outline:none; text-align:center; transition:border-color 0.15s; }
-        .price-input:focus { border-color:rgba(26,122,94,0.4); }
-        .price-input.active { border-color:rgba(26,122,94,0.5); background:#f7fdf9; }
+        .price-input:focus { border-color:rgba(185,28,28,0.4); }
+        .price-input.active { border-color:rgba(185,28,28,0.5); background:#fef2f2; }
         .price-dash { color:#ccc; font-size:13px; }
         .range-wrap { position:relative; height:20px; margin-bottom:6px; }
         .range-track { position:absolute; top:50%; left:0; right:0; height:4px; background:#efefef; border-radius:2px; transform:translateY(-50%); }
-        .range-fill { position:absolute; top:0; height:100%; background:#1a7a5e; border-radius:2px; }
+        .range-fill { position:absolute; top:0; height:100%; background:#b91c1c; border-radius:2px; }
         .range-slider { position:absolute; top:50%; width:100%; height:4px; background:transparent; transform:translateY(-50%); outline:none; appearance:none; pointer-events:none; }
-        .range-slider::-webkit-slider-thumb { appearance:none; width:16px; height:16px; border-radius:50%; background:#fff; border:2.5px solid #1a7a5e; cursor:pointer; pointer-events:all; box-shadow:0 1px 6px rgba(0,0,0,0.14); }
+        .range-slider::-webkit-slider-thumb { appearance:none; width:16px; height:16px; border-radius:50%; background:#fff; border:2.5px solid #b91c1c; cursor:pointer; pointer-events:all; box-shadow:0 1px 6px rgba(0,0,0,0.14); }
         .range-labels { display:flex; justify-content:space-between; font-size:9px; color:#ccc; margin-top:4px; }
         .brand-row { display:flex; align-items:center; gap:9px; padding:5px 0; cursor:pointer; }
-        .brand-row:hover .brand-name { color:#1a7a5e; }
-        .brand-check { accent-color:#1a7a5e; width:14px; height:14px; cursor:pointer; flex-shrink:0; }
+        .brand-row:hover .brand-name { color:#b91c1c; }
+        .brand-check { accent-color:#b91c1c; width:14px; height:14px; cursor:pointer; flex-shrink:0; }
         .brand-name { font-size:13px; color:#444; flex:1; transition:color 0.15s; font-family:'DM Sans',sans-serif; }
         .shop-main { flex:1; padding:20px; min-width:0; }
         .shop-toolbar { display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid #ebebeb; border-radius:11px; padding:10px 16px; margin-bottom:16px; gap:12px; flex-wrap:wrap; box-shadow:0 1px 6px rgba(0,0,0,0.04); }
@@ -1259,17 +1335,17 @@ if (json.success && json.data) {
         .shop-toolbar-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
         .shop-view-btns { display:flex; border:1px solid #e8e8e8; border-radius:8px; overflow:hidden; }
         .shop-view-btn { width:34px; height:34px; border:none; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#ccc; transition:all 0.15s; }
-        .shop-view-btn.active { background:#1a7a5e; color:#fff; }
+        .shop-view-btn.active { background:#b91c1c; color:#fff; }
         .shop-view-btn:hover:not(.active) { background:#f5f5f3; color:#666; }
         .shop-count { font-family:'DM Sans',sans-serif; font-size:13.5px; color:#bbb; }
         .shop-count strong { color:#1a1a1a; }
         .shop-search-inline { display:flex; align-items:center; gap:6px; border:1px solid #e8e8e8; border-radius:8px; padding:7px 13px; background:#fff; transition:border-color 0.15s; }
-        .shop-search-inline:focus-within { border-color:rgba(26,122,94,0.38); }
+        .shop-search-inline:focus-within { border-color:rgba(185,28,28,0.38); }
         .shop-search-input { border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; color:#333; width:140px; background:transparent; }
         .shop-search-input::placeholder { color:#ddd; }
         .shop-sort-wrap { position:relative; }
         .shop-sort-select { appearance:none; border:1px solid #e8e8e8; border-radius:8px; padding:8px 30px 8px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:#444; background:#fff; cursor:pointer; outline:none; min-width:148px; transition:border-color 0.15s; }
-        .shop-sort-select:focus { border-color:rgba(26,122,94,0.38); }
+        .shop-sort-select:focus { border-color:rgba(185,28,28,0.38); }
         .shop-sort-arrow { position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#aaa; font-size:10px; pointer-events:none; }
         .shop-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
         @media(max-width:1200px){.shop-grid{grid-template-columns:repeat(3,1fr)}}
@@ -1281,8 +1357,8 @@ if (json.success && json.data) {
         .shop-side-btn { width:34px; height:34px; border-radius:9px; border:1px solid #eaeaea; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 2px 10px rgba(0,0,0,0.08); transition:all 0.18s ease; position:relative; }
         .shop-side-btn:hover { transform:scale(1.1); box-shadow:0 4px 14px rgba(0,0,0,0.13); }
         .shop-side-btn.is-wished { background:#fdf2f2; border-color:rgba(185,74,72,0.28); }
-        .shop-side-btn.is-qv { background:#1a7a5e; border-color:#1a7a5e; }
-        .shop-side-btn.is-qv:hover { background:#178a68; }
+        .shop-side-btn.is-qv { background:#b91c1c; border-color:#b91c1c; }
+        .shop-side-btn.is-qv:hover { background:#991b1b; }
         .shop-side-btn::after { content:attr(data-tip); position:absolute; right:calc(100% + 9px); top:50%; transform:translateY(-50%); background:#1a1a1a; color:#fff; font-size:11px; font-weight:500; font-family:'DM Sans',sans-serif; white-space:nowrap; padding:5px 9px; border-radius:6px; opacity:0; pointer-events:none; transition:opacity 0.15s; }
         .shop-side-btn:hover::after { opacity:1; }
         .shop-card-body { padding:13px; }
@@ -1294,6 +1370,7 @@ if (json.success && json.data) {
         .shop-oos-btn { width:100%; padding:9px; background:#f5f5f3; color:#ccc; border:1px solid #efefef; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:600; cursor:not-allowed; }
         .shop-cart-btn { width:100%; padding:9px; background:#f4b400; color:#1a1a1a; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:background 0.15s,transform 0.12s,box-shadow 0.15s; display:flex; align-items:center; justify-content:center; gap:6px; }
         .shop-cart-btn:hover { background:#e0a500; transform:translateY(-1px); box-shadow:0 4px 14px rgba(244,180,0,0.3); }
+        .shop-qty-row { display:flex; align-items:center; gap:8px; margin-top:8px; }
         .prod-tableWrapper { overflow-x:auto; }
         .prod-table { width:100%; border-collapse:collapse; min-width:700px; }
         .prod-table thead tr { background:#fafaf8; border-bottom:1px solid #f0f0f0; }
@@ -1306,20 +1383,19 @@ if (json.success && json.data) {
         .prod-cart-btn-sm { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:none; background:#f4b400; color:#1a1a1a; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
         .prod-cart-btn-sm:hover { background:#e0a500; transform:translateY(-1px); box-shadow:0 3px 10px rgba(244,180,0,0.3); }
         .prod-cart-btn-sm:disabled { background:#f5f5f3; color:#ccc; cursor:not-allowed; transform:none; box-shadow:none; }
-        .prod-qvBtn { width:33px; height:33px; border-radius:8px; border:1px solid #e8e8e8; background:#f0f7f4; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.15s; }
-        .prod-qvBtn:hover { background:#d6efdf; transform:scale(1.08); border-color:rgba(26,122,94,0.3); }
+        .prod-qvBtn { width:33px; height:33px; border-radius:8px; border:1px solid #e8e8e8; background:#fef2f2; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.15s; }
+        .prod-qvBtn:hover { background:#fecaca; transform:scale(1.08); border-color:rgba(185,28,28,0.3); }
         .prod-pagination { padding:22px 20px 18px; border-top:1px solid #f0f0f0; display:flex; flex-direction:column; align-items:center; gap:10px; background:#fff; border-radius:0 0 13px 13px; }
         .prod-paginationControls { display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:center; }
         .prod-pageBtn { min-width:36px; height:36px; padding:0 8px; border-radius:9px; border:1px solid #e8e8e8; background:#fff; cursor:pointer; font-size:13.5px; color:#555; display:flex; align-items:center; justify-content:center; transition:all 0.15s; font-family:'DM Sans',sans-serif; font-weight:500; }
-        .prod-pageBtn:hover:not(:disabled):not(.active) { background:#f0f9f4; border-color:rgba(26,122,94,0.3); color:#1a7a5e; }
-        .prod-pageBtn.active { background:#1a7a5e; color:#fff; border-color:#1a7a5e; font-weight:700; box-shadow:0 2px 10px rgba(26,122,94,0.3); }
+        .prod-pageBtn:hover:not(:disabled):not(.active) { background:#fef2f2; border-color:rgba(185,28,28,0.3); color:#b91c1c; }
+        .prod-pageBtn.active { background:#b91c1c; color:#fff; border-color:#b91c1c; font-weight:700; box-shadow:0 2px 10px rgba(185,28,28,0.3); }
         .prod-pageBtn:disabled { opacity:0.3; cursor:not-allowed; }
         .prod-pageEllipsis { color:#ccc; font-size:15px; padding:0 4px; }
-        .prod-paginationInfo { font-size:12px; color:#bbb; font-family:'DM Sans',sans-serif; }
         .prod-empty { text-align:center; padding:64px 20px; color:#ccc; font-family:'DM Sans',sans-serif; }
         .prod-emptyIcon { font-size:44px; margin-bottom:12px; }
-        .price-filter-status,.brand-filter-status { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:6px 10px; background:#edfaf4; border:1px solid rgba(26,122,94,0.2); border-radius:8px; }
-        .price-filter-status-text,.brand-filter-status-text { font-size:11px; font-weight:600; color:#1a7a5e; font-family:'DM Sans',sans-serif; }
+        .price-filter-status,.brand-filter-status { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:6px 10px; background:#fef2f2; border:1px solid rgba(185,28,28,0.2); border-radius:8px; }
+        .price-filter-status-text,.brand-filter-status-text { font-size:11px; font-weight:600; color:#b91c1c; font-family:'DM Sans',sans-serif; }
         .price-filter-reset,.brand-filter-reset { background:none; border:none; cursor:pointer; font-size:11px; color:#b94a48; font-family:'DM Sans',sans-serif; font-weight:600; padding:0; }
         .price-filter-reset:hover,.brand-filter-reset:hover { text-decoration:underline; }
         .brand-skeleton { height:22px; border-radius:5px; background:#f0f0ee; margin-bottom:8px; animation:pulse 1.3s ease infinite; }
@@ -1333,6 +1409,8 @@ if (json.success && json.data) {
           onAddToCart={handleAddToCart}
           onAddToWishlist={handleToggleWishlist}
           isWishlisted={!!wishlist.find(i => i.id === quickViewProduct.id)}
+          cartItem={cart.find(i => i.id === quickViewProduct.id) || null}
+          onUpdateQuantity={handleUpdateQuantity}
         />
       )}
       {cartOpen && (
@@ -1342,6 +1420,7 @@ if (json.success && json.data) {
           onRemove={handleRemoveFromCart}
           onClearAll={handleClearCart}
           onProceedToCheckout={handleProceedToCheckout}
+          onUpdateQuantity={handleUpdateQuantity}
         />
       )}
       <SiteHeader cartCount={cartCount} wishlistCount={wishlistCount} onCategorySelect={handleNavCategorySelect} onProductSelect={handleProductSelect} onHomeClick={handleHomeClick} activeNavCat={activeNavCat} onCartClick={() => setCartOpen(true)} />
@@ -1355,7 +1434,7 @@ if (json.success && json.data) {
             <div className="filter-header" onClick={() => setPriceOpen(p => !p)}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <span className="filter-title">Filter by Price</span>
-                {isPriceFilterActive && <span style={{ width:7, height:7, borderRadius:'50%', background:'#1a7a5e', flexShrink:0, animation:'pulse 1.5s ease infinite' }}/>}
+                {isPriceFilterActive && <span style={{ width:7, height:7, borderRadius:'50%', background:'#b91c1c', flexShrink:0, animation:'pulse 1.5s ease infinite' }}/>}
               </div>
               <span className="filter-arrow" style={{ transform:priceOpen?'rotate(180deg)':'none' }}>▼</span>
             </div>
@@ -1383,7 +1462,7 @@ if (json.success && json.data) {
                   onChange={e => handlePriceMaxChange(Math.max(Number(e.target.value), sliderMin+100))} className="range-slider"/>
               </div>
               <div className="range-labels"><span>₹0</span><span>50K</span><span>1L</span><span>1.5L</span><span>2L+</span></div>
-              {priceFilterLoading && <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:10, color:'#1a7a5e', fontFamily:"'DM Sans',sans-serif", fontSize:12 }}><span style={{ width:13, height:13, borderRadius:'50%', border:'2px solid rgba(26,122,94,0.25)', borderTopColor:'#1a7a5e', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }}/>Fetching prices…</div>}
+              {priceFilterLoading && <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:10, color:'#b91c1c', fontFamily:"'DM Sans',sans-serif", fontSize:12 }}><span style={{ width:13, height:13, borderRadius:'50%', border:'2px solid rgba(185,28,28,0.25)', borderTopColor:'#b91c1c', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }}/>Fetching prices…</div>}
             </div>}
           </div>
 
@@ -1392,7 +1471,7 @@ if (json.success && json.data) {
             <div className="filter-header" onClick={() => setBrandOpen(p => !p)}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <span className="filter-title">Filter by Brand</span>
-                {isBrandFilterActive && <span style={{ width:7, height:7, borderRadius:'50%', background:'#1a7a5e', flexShrink:0, animation:'pulse 1.5s ease infinite' }}/>}
+                {isBrandFilterActive && <span style={{ width:7, height:7, borderRadius:'50%', background:'#b91c1c', flexShrink:0, animation:'pulse 1.5s ease infinite' }}/>}
               </div>
               <span className="filter-arrow" style={{ transform:brandOpen?'rotate(180deg)':'none' }}>▼</span>
             </div>
@@ -1411,7 +1490,7 @@ if (json.success && json.data) {
                       <label key={b.brand_id} className="brand-row">
                         <input type="checkbox" className="brand-check" checked={selectedBrandIds.includes(b.brand_id)} onChange={() => handleBrandToggle(b.brand_id)} disabled={brandFilterLoading}/>
                         <span className="brand-name">{b.brand_name}</span>
-                        {brandFilterLoading && selectedBrandIds.includes(b.brand_id) && <span style={{ width:10, height:10, borderRadius:'50%', border:'1.5px solid rgba(26,122,94,0.25)', borderTopColor:'#1a7a5e', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }}/>}
+                        {brandFilterLoading && selectedBrandIds.includes(b.brand_id) && <span style={{ width:10, height:10, borderRadius:'50%', border:'1.5px solid rgba(185,28,28,0.25)', borderTopColor:'#b91c1c', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }}/>}
                       </label>
                     ))
               }
@@ -1423,7 +1502,7 @@ if (json.success && json.data) {
             <div className="filter-header" onClick={() => setCatFilterOpen(p => !p)}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                 <span className="filter-title">Filter by Category</span>
-                {isCategoryFilterActive && <span style={{ width:7, height:7, borderRadius:'50%', background:'#1a7a5e', flexShrink:0, animation:'pulse 1.5s ease infinite' }}/>}
+                {isCategoryFilterActive && <span style={{ width:7, height:7, borderRadius:'50%', background:'#b91c1c', flexShrink:0, animation:'pulse 1.5s ease infinite' }}/>}
               </div>
               <span className="filter-arrow" style={{ transform:catFilterOpen?'rotate(180deg)':'none' }}>▼</span>
             </div>
@@ -1464,13 +1543,13 @@ if (json.success && json.data) {
               </div>
               <span className="shop-count">
                 <strong>{isAnyFilterActive ? sorted.length : totalCount}</strong> products
-                {isAnyFilterActive && <span style={{ marginLeft:6, fontSize:11, color:'#1a7a5e', fontWeight:600 }}>({[isBrandFilterActive&&'brand', isPriceFilterActive&&'price', isCategoryFilterActive&&'category'].filter(Boolean).join(' + ')} filtered)</span>}
+                {isAnyFilterActive && <span style={{ marginLeft:6, fontSize:11, color:'#b91c1c', fontWeight:600 }}>({[isBrandFilterActive&&'brand', isPriceFilterActive&&'price', isCategoryFilterActive&&'category'].filter(Boolean).join(' + ')} filtered)</span>}
               </span>
             </div>
             <div className="shop-toolbar-right">
               <div className="shop-search-inline" ref={inlineSearchRef} style={{ position:'relative' }}>
                 {inlineSearchLoading
-                  ? <span style={{ width:13, height:13, borderRadius:'50%', border:'2px solid rgba(26,122,94,0.25)', borderTopColor:'#1a7a5e', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }}/>
+                  ? <span style={{ width:13, height:13, borderRadius:'50%', border:'2px solid rgba(185,28,28,0.25)', borderTopColor:'#b91c1c', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }}/>
                   : <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="#ccc" strokeWidth="1.5"/><path d="M9 9l3 3" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 }
                 <input
@@ -1513,7 +1592,7 @@ if (json.success && json.data) {
                             <div key={p.id || i}
                               onClick={() => { setQuickViewProduct(p); setInlineSearchResults(null) }}
                               style={{ display:'flex', alignItems:'center', gap:11, padding:'10px 14px', cursor:'pointer', borderBottom:'1px solid #f8f8f8', transition:'background 0.1s' }}
-                              onMouseEnter={e=>e.currentTarget.style.background='#f7fdf9'}
+                              onMouseEnter={e=>e.currentTarget.style.background='#fef2f2'}
                               onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                               <div style={{ width:40, height:40, borderRadius:8, flexShrink:0, background:`linear-gradient(145deg,hsl(${hue},22%,93%),hsl(${hue},26%,87%))`, border:`1px solid hsl(${hue},18%,85%)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, overflow:'hidden' }}>
                                 {p.firstImage ? <InlineThumb imageData={p.firstImage} name={p.name} /> : <span>{CAT_ICONS[p.category]||'📦'}</span>}
@@ -1525,7 +1604,7 @@ if (json.success && json.data) {
                                   {p.category && <span style={{ fontSize:10, color:'#bbb', fontFamily:"'DM Sans',sans-serif" }}>{p.category}</span>}
                                 </div>
                               </div>
-                              <span style={{ fontSize:11, color:'#1a7a5e', fontFamily:"'DM Sans',sans-serif", fontWeight:600, flexShrink:0, background:'#edfaf4', padding:'2px 7px', borderRadius:5 }}>View</span>
+                              <span style={{ fontSize:11, color:'#b91c1c', fontFamily:"'DM Sans',sans-serif", fontWeight:600, flexShrink:0, background:'#fef2f2', padding:'2px 7px', borderRadius:5 }}>View</span>
                             </div>
                           )
                         })}
@@ -1567,9 +1646,9 @@ if (json.success && json.data) {
               <div style={{ fontSize:15 }}>
                 {isCategoryFilterActive ? `No products in selected categor${selectedCategoryIds.length>1?'ies':'y'}` : isBrandFilterActive ? `No products for selected brand${selectedBrandIds.length>1?'s':''}` : isPriceFilterActive ? 'No products in this price range' : 'No products found'}
               </div>
-              {isCategoryFilterActive && <button onClick={resetCategoryFilter} style={{ marginTop:12, padding:'8px 18px', background:'#1a7a5e', color:'#fff', border:'none', borderRadius:8, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Clear Filter</button>}
-              {isBrandFilterActive && !isCategoryFilterActive && <button onClick={resetBrandFilter} style={{ marginTop:12, padding:'8px 18px', background:'#1a7a5e', color:'#fff', border:'none', borderRadius:8, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Clear Filter</button>}
-              {isPriceFilterActive && !isBrandFilterActive && !isCategoryFilterActive && <button onClick={resetPriceFilter} style={{ marginTop:12, padding:'8px 18px', background:'#1a7a5e', color:'#fff', border:'none', borderRadius:8, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Clear Filter</button>}
+              {isCategoryFilterActive && <button onClick={resetCategoryFilter} style={{ marginTop:12, padding:'8px 18px', background:'#b91c1c', color:'#fff', border:'none', borderRadius:8, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Clear Filter</button>}
+              {isBrandFilterActive && !isCategoryFilterActive && <button onClick={resetBrandFilter} style={{ marginTop:12, padding:'8px 18px', background:'#b91c1c', color:'#fff', border:'none', borderRadius:8, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Clear Filter</button>}
+              {isPriceFilterActive && !isBrandFilterActive && !isCategoryFilterActive && <button onClick={resetPriceFilter} style={{ marginTop:12, padding:'8px 18px', background:'#b91c1c', color:'#fff', border:'none', borderRadius:8, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Clear Filter</button>}
             </div>
           ) : viewMode === 'grid' ? (
             <div className="shop-grid">
@@ -1577,6 +1656,9 @@ if (json.success && json.data) {
                 const d   = disc(p.original_price, p.price)
                 const isW = !!wishlist.find(w => w.id === p.id)
                 const isHov = hoveredCard === p.id
+                const cartItem = cart.find(c => c.id === p.id)
+                const inCart = !!cartItem
+                const qty = cartItem?.quantity || 1
                 return (
                   <div className="shop-card" key={p.id}
                     style={{ animationDelay:`${i*0.05}s`, boxShadow:isHov?'0 10px 36px rgba(0,0,0,0.13)':undefined, transform:isHov?'translateY(-4px)':undefined, borderColor:isHov?'#e0e0e0':undefined }}
@@ -1596,24 +1678,35 @@ if (json.success && json.data) {
                         <span className="shop-card-price">{fmt(p.price)}</span>
                         {p.original_price > p.price && <span className="shop-card-orig">{fmt(p.original_price)}</span>}
                       </div>
-                      {p.stock === 0
-                        ? <button className="shop-oos-btn" disabled>Out of Stock</button>
-                        : (() => {
-                            const inCart = !!cart.find(c => c.id === p.id)
-                            return (
-                              <div style={{ overflow:'hidden', maxHeight:isHov?52:0, opacity:isHov?1:0, marginTop:isHov?8:0, transition:'max-height 0.28s ease, opacity 0.22s ease, margin-top 0.28s ease' }}>
-                                <button
-                                  className="shop-cart-btn"
-                                  onClick={e => { e.stopPropagation(); inCart ? handleRemoveFromCart(p.id) : handleAddToCart(p) }}
-                                  style={inCart ? { background:'#fdf2f2', color:'#b94a48', border:'1px solid rgba(185,74,72,0.25)' } : {}}
-                                >
-                                  <span>{inCart ? '🗑️' : '🛒'}</span>
-                                  {inCart ? 'Remove from Cart' : 'Add To Cart'}
-                                </button>
-                              </div>
-                            )
-                          })()
-                      }
+                      {p.stock === 0 ? (
+                        <button className="shop-oos-btn" disabled>Out of Stock</button>
+                      ) : inCart ? (
+                        // ── Quantity stepper (shown when item is in cart) ──
+                        <div style={{ overflow:'hidden', maxHeight:isHov?60:0, opacity:isHov?1:0, marginTop:isHov?6:0, transition:'max-height 0.28s ease, opacity 0.22s ease, margin-top 0.28s ease' }}>
+                          <div className="shop-qty-row">
+                            <QuantityStepper
+                              size="sm"
+                              quantity={qty}
+                              onDecrease={() => handleUpdateQuantity(p.id, qty - 1)}
+                              onIncrease={() => handleUpdateQuantity(p.id, qty + 1)}
+                              max={p.stock || 99}
+                            />
+                            <button
+                              className="shop-cart-btn"
+                              onClick={e => { e.stopPropagation(); handleRemoveFromCart(p.id) }}
+                              style={{ background:'#fdf2f2', color:'#b94a48', border:'1px solid rgba(185,74,72,0.25)', flex:1 }}
+                            >
+                              🗑️ Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ overflow:'hidden', maxHeight:isHov?52:0, opacity:isHov?1:0, marginTop:isHov?8:0, transition:'max-height 0.28s ease, opacity 0.22s ease, margin-top 0.28s ease' }}>
+                          <button className="shop-cart-btn" onClick={e => { e.stopPropagation(); handleAddToCart(p) }}>
+                            <span>🛒</span> Add To Cart
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
@@ -1628,13 +1721,16 @@ if (json.success && json.data) {
                     <th>Category</th>
                     <th>Rate</th>
                     <th>Stock</th>
+                    <th>Quantity</th>
                     <th style={{ textAlign:'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sorted.map(p => {
                     const d = disc(p.original_price, p.price)
-                    const inCart = !!cart.find(c => c.id === p.id)
+                    const cartItem = cart.find(c => c.id === p.id)
+                    const inCart = !!cartItem
+                    const qty = cartItem?.quantity || 1
                     return (
                       <tr key={p.id}>
                         <td>
@@ -1654,14 +1750,27 @@ if (json.success && json.data) {
                           {d > 0 && (
                             <div style={{ display:'flex', alignItems:'center', gap:5, marginTop:2 }}>
                               <span style={{ fontSize:11, color:'#ccc', textDecoration:'line-through', fontFamily:"'DM Sans',sans-serif" }}>{fmt(p.original_price)}</span>
-                              <span style={{ fontSize:10, fontWeight:700, color:'#1a7a5e', background:'#edfaf4', padding:'1px 6px', borderRadius:4 }}>-{d}%</span>
+                              <span style={{ fontSize:10, fontWeight:700, color:'#b91c1c', background:'#fef2f2', padding:'1px 6px', borderRadius:4 }}>-{d}%</span>
                             </div>
                           )}
                         </td>
                         <td>
-                          <span style={{ fontSize:13, fontWeight:600, color:p.stock===0?'#b94a48':p.stock<=5?'#c2570a':'#1a7a5e', fontFamily:"'DM Sans',sans-serif" }}>
+                          <span style={{ fontSize:13, fontWeight:600, color:p.stock===0?'#b94a48':p.stock<=5?'#c2570a':'#b91c1c', fontFamily:"'DM Sans',sans-serif" }}>
                             {p.stock === 0 ? 'Out of stock' : `${p.stock} units`}
                           </span>
+                        </td>
+                        <td>
+                          {inCart && p.stock !== 0 ? (
+                            <QuantityStepper
+                              size="sm"
+                              quantity={qty}
+                              onDecrease={() => handleUpdateQuantity(p.id, qty - 1)}
+                              onIncrease={() => handleUpdateQuantity(p.id, qty + 1)}
+                              max={p.stock || 99}
+                            />
+                          ) : (
+                            <span style={{ fontSize:12, color:'#ddd', fontFamily:"'DM Sans',sans-serif" }}>—</span>
+                          )}
                         </td>
                         <td>
                           <div className="prod-tblActions" style={{ justifyContent:'flex-end' }}>
@@ -1671,7 +1780,7 @@ if (json.success && json.data) {
                               onClick={() => inCart ? handleRemoveFromCart(p.id) : handleAddToCart(p)}
                               style={inCart ? { background:'#fdf2f2', color:'#b94a48', border:'1px solid rgba(185,74,72,0.25)', boxShadow:'none' } : {}}
                             >
-                              {p.stock === 0 ? '🚫 Out of Stock' : inCart ? '🗑️ Remove from Cart' : '🛒 Add to Cart'}
+                              {p.stock === 0 ? '🚫 Out of Stock' : inCart ? '🗑️ Remove' : '🛒 Add to Cart'}
                             </button>
                             <button className="prod-qvBtn" onClick={() => setQuickViewProduct(p)} title="Quick View">👁</button>
                           </div>

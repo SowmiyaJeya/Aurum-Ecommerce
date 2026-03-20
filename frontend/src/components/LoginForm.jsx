@@ -88,8 +88,9 @@ export default function LoginForm({ onSwitchToRegister }) {
       showToast('success', '👋 Welcome back!', `Logged in as ${form.username}. Redirecting...`)
 
       setTimeout(() => {
-        navigate('/users')
-      }, 1500)
+  const role = data.user?.role
+  navigate(role === 'Admin' ? '/users' : '/lists')
+}, 1500)
 
     } catch (err) {
       console.error('Login error:', err)

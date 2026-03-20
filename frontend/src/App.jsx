@@ -9,6 +9,7 @@ import Products from './components/Products'
 import Brand from './components/Brand'
 import ProductsList from './components/ProductsList'
 import Checkout from './components/Checkout'
+import Orders from './components/Orders'
 import './styles/Auth.css'
 
 // ── Auth page: shows Login tab by default, Register tab on /register ──────────
@@ -66,14 +67,32 @@ function AuthPage({ defaultTab }) {
   )
 }
 
-// ── Route protection for admin-only pages ─────────────────────────────────────
-function ProtectedRoute({ children, allowUser = false }) {
-  const user = JSON.parse(localStorage.getItem('user'))
-  const role = user?.role
+// ── Helper to read user from localStorage ─────────────────────────────────────
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('user')) } catch { return null }
+}
 
+// ── Redirect after login based on role ───────────────────────────────────────
+function RoleRedirect() {
+  const user = getUser()
   if (!user) return <Navigate to="/" replace />
-  if (role === 'User' && !allowUser) return <Navigate to="/lists" replace />
+  return user.role === 'Admin'
+    ? <Navigate to="/users" replace />
+    : <Navigate to="/lists" replace />
+}
 
+// ── Admin-only route: must be logged in AND be Admin ─────────────────────────
+function AdminRoute({ children }) {
+  const user = getUser()
+  if (!user) return <Navigate to="/" replace />
+  if (user.role !== 'Admin') return <Navigate to="/lists" replace />
+  return children
+}
+
+// ── User route: must be logged in (any role) ─────────────────────────────────
+function UserRoute({ children }) {
+  const user = getUser()
+  if (!user) return <Navigate to="/" replace />
   return children
 }
 
@@ -88,32 +107,41 @@ export default function App() {
         <Route path="/login"    element={<AuthPage defaultTab="login" />} />
         <Route path="/register" element={<AuthPage defaultTab="register" />} />
 
-        {/* ── ProductsList: standalone, NO dashboard sidebar/topbar ── */}
+        {/* After login, redirect to the correct screen based on role */}
+        <Route path="/home" element={<RoleRedirect />} />
+
+        {/* ── User-only routes: standalone, NO dashboard sidebar ── */}
         <Route
           path="/lists"
           element={
-            <ProtectedRoute allowUser={true}>
+            <UserRoute>
               <ProductsList />
-            </ProtectedRoute>
+            </UserRoute>
           }
         />
-
-        {/* ── Checkout: standalone, protected, accessible by users ── */}
         <Route
           path="/checkout"
           element={
-            <ProtectedRoute allowUser={true}>
+            <UserRoute>
               <Checkout />
-            </ProtectedRoute>
+            </UserRoute>
           }
         />
 
-        {/* ── Dashboard layout wraps admin-only pages ── */}
-        <Route path="/" element={<Dashboard />}>
-          <Route path="users"    element={<ProtectedRoute><Users /></ProtectedRoute>} />
-          <Route path="products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-          <Route path="category" element={<ProtectedRoute><Category /></ProtectedRoute>} />
-          <Route path="brands"   element={<ProtectedRoute><Brand /></ProtectedRoute>} />
+        {/* ── Admin dashboard: sidebar + nested pages ── */}
+        <Route
+          path="/"
+          element={
+            <AdminRoute>
+              <Dashboard />
+            </AdminRoute>
+          }
+        >
+          <Route path="users"    element={<AdminRoute><Users /></AdminRoute>} />
+          <Route path="products" element={<AdminRoute><Products /></AdminRoute>} />
+          <Route path="category" element={<AdminRoute><Category /></AdminRoute>} />
+          <Route path="brands"   element={<AdminRoute><Brand /></AdminRoute>} />
+          <Route path="orders"   element={<AdminRoute><Orders /></AdminRoute>} />
         </Route>
 
         {/* Catch-all */}

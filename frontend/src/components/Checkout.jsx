@@ -21,7 +21,6 @@ function detectMime(bytes) {
 function resolveImageSrc(imageData) {
   if (!imageData) return null
 
-  // Already a usable URL or base64 data URI
   if (typeof imageData === 'string') {
     const trimmed = imageData.trim()
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
@@ -30,14 +29,11 @@ function resolveImageSrc(imageData) {
     if (trimmed.startsWith('data:image')) {
       return trimmed
     }
-    // Raw base64 (no data: prefix)
     if (/^[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length > 100) {
       return `data:image/jpeg;base64,${trimmed}`
     }
-    // Hex string → bytes → blob URL (handled below via buffer path)
   }
 
-  // Buffer-like object: { type:'Buffer', data:[...] } or { data:[...] }
   if (imageData?.type === 'Buffer' && Array.isArray(imageData.data)) {
     try {
       const bytes = new Uint8Array(imageData.data)
@@ -54,7 +50,6 @@ function resolveImageSrc(imageData) {
     } catch { return null }
   }
 
-  // Raw Uint8Array / ArrayBuffer
   if (imageData instanceof Uint8Array || imageData instanceof ArrayBuffer) {
     try {
       const bytes = imageData instanceof ArrayBuffer ? new Uint8Array(imageData) : imageData
@@ -63,7 +58,6 @@ function resolveImageSrc(imageData) {
     } catch { return null }
   }
 
-  // Hex string fallback
   if (typeof imageData === 'string') {
     try {
       const hex = imageData.replace(/^0x/i, '').replace(/[^0-9a-fA-F]/g, '')
@@ -84,7 +78,6 @@ function useResolvedImage(imageData) {
   useEffect(() => {
     const result = resolveImageSrc(imageData)
     setSrc(result)
-    // Only revoke if we created a blob URL (not a plain string URL from backend)
     return () => {
       if (result && result.startsWith('blob:')) URL.revokeObjectURL(result)
     }
@@ -145,7 +138,6 @@ function validatePayment(method, payFields) {
     if (!payFields.cvv.trim()) errors.cvv = 'CVV is required'
     else if (!/^\d{3,4}$/.test(payFields.cvv)) errors.cvv = 'Enter 3 or 4 digit CVV'
   }
-  // COD has no required fields
   return errors
 }
 
@@ -191,23 +183,23 @@ function SuccessModal({ orderId, onContinue }) {
 
 // ─── Payment Step component ──────────────────────────────────────────────────
 function PaymentStep({ total, cart, fields, onBack, onSuccess }){
-  const [method, setMethod]     = useState('card')   // 'card' | 'cod'
+  const [method, setMethod]     = useState('card')
   const [payFields, setPayFields] = useState({
     cardNumber : '',
     cardName   : '',
     expiry     : '',
     cvv        : '',
     customer: {
-  username: fields.fullName,
-  email: fields.email,
-  mobile: fields.phone,
-  address_line1: fields.address1,
-  address_line2: fields.address2,
-  city: fields.city,
-  state: fields.state,
-  pincode: fields.pinCode,
-  country: fields.country
-}
+      username: fields.fullName,
+      email: fields.email,
+      mobile: fields.phone,
+      address_line1: fields.address1,
+      address_line2: fields.address2,
+      city: fields.city,
+      state: fields.state,
+      pincode: fields.pinCode,
+      country: fields.country
+    }
   })
   const [errors,  setErrors]  = useState({})
   const [touched, setTouched] = useState({})
@@ -225,13 +217,11 @@ function PaymentStep({ total, cart, fields, onBack, onSuccess }){
     setErrors(prev => ({ ...prev, [key]: errs[key] }))
   }
 
-  // Format card number with spaces every 4 digits
   const formatCard = val => {
     const digits = val.replace(/\D/g, '').slice(0, 16)
     return digits.replace(/(.{4})/g, '$1 ').trim()
   }
 
-  // Format expiry MM/YY
   const formatExpiry = val => {
     const digits = val.replace(/\D/g, '').slice(0, 4)
     if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2)
@@ -246,98 +236,82 @@ function PaymentStep({ total, cart, fields, onBack, onSuccess }){
   })
 
   const handlePay = useCallback(async () => {
-  const allTouched = Object.keys(payFields).reduce((a, k) => ({ ...a, [k]: true }), {})
-  setTouched(allTouched)
+    const allTouched = Object.keys(payFields).reduce((a, k) => ({ ...a, [k]: true }), {})
+    setTouched(allTouched)
 
-  const errs = validatePayment(method, payFields)
-  if (Object.keys(errs).length > 0) {
-    setErrors(errs)
-    return
-  }
-
-  setLoading(true)
-
-  try {
-    // 🔹 Get user from localStorage
-    // const user = JSON.parse(localStorage.getItem('user')) || {}
-
-    // 🔹 Prepare items from cart
-    const items = cart.map(item => ({
-      product_id: item.id,
-      quantity: 1,
-      price: item.price
-    }))
-const [month, year] = payFields.expiry.split('/')
-
-const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
-    // 🔹 Prepare request body
-    const payload = {
-  type: "createOrder",
-  usercode: JSON.parse(localStorage.getItem('user'))?.usercode, // only for usercode
-  total_amount: total,
-
-  items: cart.map(item => ({
-    product_id: item.id,
-    quantity: 1,
-    price: item.price
-  })),
-
-  customer: {
-    username: fields.fullName,
-    email: fields.email,
-    mobile: fields.phone,
-    address_line1: fields.address1,
-    address_line2: fields.address2,
-    city: fields.city,
-    state: fields.state,
-    pincode: fields.pinCode,
-    country: fields.country
-  },
-
-  payment:
-    method === "cod"
-      ? { method: "COD" }
-      : {
-          method: "CARD",
-          cardholder_name: payFields.cardName,
-          expiry_date: formattedExpiry,
-          cvv: Number(payFields.cvv)
-        }
-}
-
-    // 🔹 API CALL
-    const res = await fetch("http://localhost:5000/create-order", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
-
-    const data = await res.json()
-
-    if (!data.success) {
-      throw new Error(data.message || "Order failed")
+    const errs = validatePayment(method, payFields)
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      return
     }
 
-    // ✅ SUCCESS
-    onSuccess(data.order_id)
+    setLoading(true)
 
-  } catch (err) {
-    console.error(err)
-    alert("Order failed. Please try again.")
-  } finally {
-    setLoading(false)
-  }
+    try {
+      const [month, year] = payFields.expiry.split('/')
+      const formattedExpiry = `20${year}-${month}-01`
 
-}, [method, payFields, cart, total, onSuccess])
+      const payload = {
+        type: "createOrder",
+        usercode: JSON.parse(localStorage.getItem('user'))?.usercode,
+        total_amount: total,
+        // ── Use actual quantity from each cart item ──────────────────────
+        items: cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity || 1,
+          price: item.price
+        })),
+        customer: {
+          username: fields.fullName,
+          email: fields.email,
+          mobile: fields.phone,
+          address_line1: fields.address1,
+          address_line2: fields.address2,
+          city: fields.city,
+          state: fields.state,
+          pincode: fields.pinCode,
+          country: fields.country
+        },
+        payment:
+          method === "cod"
+            ? { method: "COD" }
+            : {
+                method: "CARD",
+                cardholder_name: payFields.cardName,
+                expiry_date: formattedExpiry,
+                cvv: Number(payFields.cvv)
+              }
+      }
+
+      const res = await fetch("http://localhost:5000/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+
+      if (!data.success) {
+        throw new Error(data.message || "Order failed")
+      }
+
+      onSuccess(data.order_id)
+
+    } catch (err) {
+      console.error(err)
+      alert("Order failed. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+
+  }, [method, payFields, cart, total, onSuccess])
 
   const payBtnLabel = method === 'cod' ? 'Place COD Order' : 'Pay with Card'
 
   return (
     <div className="checkout-card checkout-details-card payment-step-card">
       <div className="card-header">
-        <div className="card-header-icon blue">💳</div>
+        <div className="card-header-icon red">💳</div>
         <div className="card-header-text">
           <div className="card-header-title">Payment Details</div>
           <div className="card-header-sub">Choose your preferred payment method</div>
@@ -346,7 +320,6 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
 
       <div className="card-body">
 
-        {/* ── Payment method tabs ──────────────────────────────── */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
           {[
             { id: 'card', label: 'Credit / Debit Card', icon: '💳' },
@@ -366,14 +339,14 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
                   gap: 8,
                   padding: '12px 16px',
                   borderRadius: 10,
-                  border: isActive ? '2px solid #1a7a4a' : '2px solid #d0d0d0',
-                  background: isActive ? '#1a7a4a' : '#ffffff',
+                  border: isActive ? '2px solid #b91c1c' : '2px solid #d0d0d0',
+                  background: isActive ? '#b91c1c' : '#ffffff',
                   color: isActive ? '#ffffff' : '#555555',
                   fontWeight: isActive ? 700 : 500,
                   fontSize: 14,
                   cursor: 'pointer',
                   transition: 'all 0.18s ease',
-                  boxShadow: isActive ? '0 2px 10px rgba(26,122,74,0.25)' : 'none',
+                  boxShadow: isActive ? '0 2px 10px rgba(185,28,28,0.25)' : 'none',
                   letterSpacing: '0.01em',
                   fontFamily: 'inherit',
                 }}
@@ -385,7 +358,6 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
           })}
         </div>
 
-        {/* ── Card ────────────────────────────────────────────── */}
         {method === 'card' && (
           <div className="payment-fields">
             <div className="payment-info-banner">
@@ -462,7 +434,6 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
           </div>
         )}
 
-        {/* ── COD ─────────────────────────────────────────────── */}
         {method === 'cod' && (
           <div className="payment-fields">
             <div className="cod-info-box">
@@ -478,13 +449,11 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
           </div>
         )}
 
-        {/* ── Amount summary ───────────────────────────────────── */}
         <div className="payment-amount-summary">
           <span className="payment-amount-label">Amount to pay</span>
           <span className="payment-amount-value">{fmt(total)}</span>
         </div>
 
-        {/* ── Actions ──────────────────────────────────────────── */}
         <button className="checkout-cta" onClick={handlePay} disabled={loading}>
           {loading
             ? <><span className="cta-spinner" /> Processing…</>
@@ -492,7 +461,6 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
           }
         </button>
 
-        {/* Back button styled as a secondary CTA to match the UI */}
         <button
           onClick={onBack}
           disabled={loading}
@@ -502,9 +470,9 @@ const formattedExpiry = `20${year}-${month}-01`  // YYYY-MM-DD
             padding: '14px',
             marginTop: 10,
             borderRadius: 10,
-            border: '2px solid #1a7a4a',
+            border: '2px solid #b91c1c',
             background: 'transparent',
-            color: '#1a7a4a',
+            color: '#b91c1c',
             fontWeight: 600,
             fontSize: 15,
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -545,7 +513,6 @@ export default function Checkout({ cart: cartProp, onBack: onBackProp, onSuccess
         try { return JSON.parse(localStorage.getItem('cart') || '[]') } catch { return [] }
       })()
 
-  // step: 'details' | 'payment' | 'success'
   const [step, setStep] = useState('details')
   const [orderId, setOrderId] = useState(null)
 
@@ -562,23 +529,39 @@ export default function Checkout({ cart: cartProp, onBack: onBackProp, onSuccess
     navigate('/lists')
   }
 
-const storedUser = (() => {
-  try {
-    const enriched = localStorage.getItem('checkoutUser')
-    if (enriched) {
-      localStorage.removeItem('checkoutUser')
-      return JSON.parse(enriched)
-    }
-    return JSON.parse(localStorage.getItem('user')) || {}
-  } catch { return {} }
-})()
+  const storedUser = (() => {
+    try {
+      const enriched = localStorage.getItem('checkoutUser')
+      if (enriched) {
+        localStorage.removeItem('checkoutUser')
+        return JSON.parse(enriched)
+      }
+      return JSON.parse(localStorage.getItem('user')) || {}
+    } catch { return {} }
+  })()
 
-const [fields, setFields] = useState(() => {
-  try {
-    const enriched = localStorage.getItem('checkoutUser')
-    if (enriched) {
-      localStorage.removeItem('checkoutUser')
-      const u = JSON.parse(enriched)
+  const [fields, setFields] = useState(() => {
+    try {
+      const enriched = localStorage.getItem('checkoutUser')
+      if (enriched) {
+        localStorage.removeItem('checkoutUser')
+        const u = JSON.parse(enriched)
+        return {
+          fullName : u.name     || u.username || '',
+          email    : u.email    || '',
+          phone    : u.mobile   || u.phone    || '',
+          address1 : u.address  || '',
+          address2 : '',
+          city     : u.city     || '',
+          state    : u.state    || '',
+          pinCode  : u.pin_code || '',
+          country  : u.country  || 'India',
+        }
+      }
+    } catch {}
+
+    try {
+      const u = JSON.parse(localStorage.getItem('user')) || {}
       return {
         fullName : u.name     || u.username || '',
         email    : u.email    || '',
@@ -590,43 +573,55 @@ const [fields, setFields] = useState(() => {
         pinCode  : u.pin_code || '',
         country  : u.country  || 'India',
       }
-    }
-  } catch {}
+    } catch {}
 
-  // fallback to regular user
-  try {
-    const u = JSON.parse(localStorage.getItem('user')) || {}
     return {
-      fullName : u.name     || u.username || '',
-      email    : u.email    || '',
-      phone    : u.mobile   || u.phone    || '',
-      address1 : u.address  || '',
-      address2 : '',
-      city     : u.city     || '',
-      state    : u.state    || '',
-      pinCode  : u.pin_code || '',
-      country  : u.country  || 'India',
+      fullName:'', email:'', phone:'', address1:'',
+      address2:'', city:'', state:'', pinCode:'', country:'India',
     }
-  } catch {}
+  })
 
-  return {
-    fullName:'', email:'', phone:'', address1:'',
-    address2:'', city:'', state:'', pinCode:'', country:'India',
-  }
-})
-
-// Still needed for the isAutoFilled banner check
-// const storedUser = (() => {
-//   try { return JSON.parse(localStorage.getItem('user')) || {} } catch { return {} }
-// })()
   const [errors,  setErrors]  = useState({})
   const [touched, setTouched] = useState({})
 
+  // ── Prefill from last order on every mount ──────────────────────────────
+  useEffect(() => {
+    const usercode = (() => {
+      try { return JSON.parse(localStorage.getItem('user'))?.usercode } catch { return null }
+    })()
+    if (!usercode) return
+
+    fetch('http://localhost:5000/orders-data', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ type: 'userOrders', usercode }),
+    })
+      .then(r => r.json())
+      .then(res => {
+        if (!res?.data) return
+        const d = res.data
+        setFields(current => ({
+          fullName : current.fullName || d.username       || '',
+          email    : current.email    || d.email          || '',
+          phone    : current.phone    || d.mobile         || '',
+          address1 : current.address1 || d.address_line1  || '',
+          address2 : current.address2 || d.address_line2  || '',
+          city     : current.city     || d.city           || '',
+          state    : current.state    || d.state          || '',
+          pinCode  : current.pinCode  || d.pincode        || '',
+          country  : current.country  || d.country        || 'India',
+        }))
+      })
+      .catch(err => console.warn('Could not prefill from previous order:', err))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const isAutoFilled = !!storedUser.email
 
-  const subtotal       = cart.reduce((s, i) => s + (i.price || 0), 0)
+  // ── Totals: multiply price × quantity for each item ─────────────────────
+  const totalUnits    = cart.reduce((s, i) => s + (i.quantity || 1), 0)
+  const subtotal      = cart.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0)
   const deliveryCharge = 0
-  const total          = subtotal + deliveryCharge
+  const total         = subtotal + deliveryCharge
 
   const set = (key, val) => {
     setFields(prev => ({ ...prev, [key]: val }))
@@ -639,7 +634,6 @@ const [fields, setFields] = useState(() => {
     setErrors(prev => ({ ...prev, [key]: errs[key] }))
   }
 
-  // Validate details and move to payment step
   const handleConfirm = useCallback(() => {
     const allTouched = Object.keys(fields).reduce((a, k) => ({ ...a, [k]: true }), {})
     setTouched(allTouched)
@@ -678,7 +672,6 @@ const [fields, setFields] = useState(() => {
     ...extra,
   })
 
-  // Step indicator config
   const stepConfig = [
     { label: 'Cart',     num: 1, state: 'done'   },
     { label: 'Details',  num: 2, state: step === 'details' ? 'active' : 'done' },
@@ -703,7 +696,6 @@ const [fields, setFields] = useState(() => {
         </div>
       </div>
 
-      {/* ── Step indicator ────────────────────────────────────────── */}
       <div className="checkout-steps">
         {stepConfig.map((s, i) => (
           <div key={s.label} className={`checkout-step ${s.state}`} style={{ animationDelay: `${i * 0.08}s` }}>
@@ -718,14 +710,12 @@ const [fields, setFields] = useState(() => {
         ))}
       </div>
 
-      {/* ── Two-column body ───────────────────────────────────────── */}
       <div className="checkout-body">
 
-        {/* ── Left column: Details or Payment ─────────────────────── */}
         {step === 'details' && (
           <div className="checkout-card checkout-details-card">
             <div className="card-header">
-              <div className="card-header-icon green">👤</div>
+              <div className="card-header-icon red">👤</div>
               <div className="card-header-text">
                 <div className="card-header-title">Personal &amp; Delivery Details</div>
                 <div className="card-header-sub">All fields marked <span style={{ color:'#e03030' }}>*</span> are required</div>
@@ -760,7 +750,7 @@ const [fields, setFields] = useState(() => {
                   <label className="form-label">Phone Number <span className="req">*</span></label>
                   <div className="phone-input-wrap">
                     <span className="phone-prefix">🇮🇳 +91</span>
-                   <input
+                    <input
                       className={`form-input${errors.phone && touched.phone ? ' error' : ''}${isAutoFilled && fields.phone ? ' autofilled' : ''}`}
                       value={fields.phone}
                       onChange={e => set('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
@@ -768,9 +758,8 @@ const [fields, setFields] = useState(() => {
                       placeholder="98765 43210"
                       maxLength={10}
                       inputMode="numeric"
-                      defaultValue={storedUser.mobile || storedUser.phone || ''}
                     />
-                    </div>
+                  </div>
                   {errors.phone && touched.phone && <span className="form-error">⚠ {errors.phone}</span>}
                 </div>
               </div>
@@ -828,7 +817,6 @@ const [fields, setFields] = useState(() => {
                   {errors.pinCode && touched.pinCode && <span className="form-error">⚠ {errors.pinCode}</span>}
                 </div>
                 <div className="form-group">
-                  {/* ── Country: free-text input with datalist suggestions ── */}
                   <label className="form-label">Country <span className="req">*</span></label>
                   <input
                     {...inp('country')}
@@ -848,46 +836,59 @@ const [fields, setFields] = useState(() => {
         )}
 
         {step === 'payment' && (
-        <PaymentStep
-  total={total}
-  cart={cart}
-  fields={fields}   // ✅ VERY IMPORTANT
-  onBack={() => setStep('details')}
-  onSuccess={id => { setOrderId(id); setStep('success') }}
-/>
+          <PaymentStep
+            total={total}
+            cart={cart}
+            fields={fields}
+            onBack={() => setStep('details')}
+            onSuccess={id => { setOrderId(id); setStep('success') }}
+          />
         )}
 
-        {/* ── Right column: Order Summary (always visible) ─────────── */}
+        {/* ── Order Summary ─────────────────────────────────────────────── */}
         <div className="checkout-card checkout-order-card">
           <div className="card-header">
             <div className="card-header-icon yellow">🛒</div>
             <div className="card-header-text">
               <div className="card-header-title">Order Summary</div>
-              <div className="card-header-sub">{cart.length} item{cart.length !== 1 ? 's' : ''} in cart</div>
+              <div className="card-header-sub">
+                {cart.length} item{cart.length !== 1 ? 's' : ''} · {totalUnits} unit{totalUnits !== 1 ? 's' : ''}
+              </div>
             </div>
           </div>
 
           <div className="card-body">
             <div className="section-label">Items</div>
             <div style={{ marginBottom: 4 }}>
-              {cart.map((item, i) => (
-                <div className="order-item" key={item.id} style={{ animationDelay: `${i * 0.06}s` }}>
-                  <div className="order-item-thumb">
-                    {item.firstImage ? <ItemThumb imageData={item.firstImage} /> : <span>📦</span>}
+              {cart.map((item, i) => {
+                const qty      = item.quantity || 1
+                const lineAmt  = (item.price || 0) * qty
+                return (
+                  <div className="order-item" key={item.id} style={{ animationDelay: `${i * 0.06}s` }}>
+                    <div className="order-item-thumb">
+                      {item.firstImage ? <ItemThumb imageData={item.firstImage} /> : <span>📦</span>}
+                    </div>
+                    <div className="order-item-info">
+                      <div className="order-item-name" title={item.name}>{item.name}</div>
+                      {/* ── Show real quantity + unit price ── */}
+                      <div className="order-item-qty">
+                        {qty > 1
+                          ? `${qty} × ${fmt(item.price)}`
+                          : `Qty: 1`
+                        }
+                      </div>
+                    </div>
+                    {/* ── Line total ── */}
+                    <div className="order-item-price">{fmt(lineAmt)}</div>
                   </div>
-                  <div className="order-item-info">
-                    <div className="order-item-name" title={item.name}>{item.name}</div>
-                    <div className="order-item-qty">Qty: 1</div>
-                  </div>
-                  <div className="order-item-price">{fmt(item.price)}</div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="section-label" style={{ marginTop: 18 }}>Price Details</div>
             <div className="price-breakdown">
               <div className="price-row">
-                <span>Subtotal ({cart.length} item{cart.length !== 1 ? 's' : ''})</span>
+                <span>Subtotal ({totalUnits} unit{totalUnits !== 1 ? 's' : ''})</span>
                 <span className="val">{fmt(subtotal)}</span>
               </div>
               <div className="price-row">
@@ -907,7 +908,6 @@ const [fields, setFields] = useState(() => {
               </div>
             </div>
 
-            {/* Show action button only on details step */}
             {step === 'details' && (
               <>
                 <button className="checkout-cta" onClick={handleConfirm}>

@@ -1,6 +1,6 @@
 :root {
-  --accent:           #1a6ef5;
-  --accent-pale:      #e8f1fe;
+  --accent:           #b91c1c;
+  --accent-pale:      #fef2f2;
   --danger:           #b94a48;
   --danger-pale:      #fdf2f2;
   --surface:          #ffffff;
@@ -80,14 +80,14 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: 0 3px 12px rgba(26, 110, 245, 0.28);
+  box-shadow: 0 3px 12px rgba(185, 28, 28, 0.28);
   transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
   letter-spacing: 0.01em;
 }
 
 .users__addBtn:hover {
-  background: #1560d8;
-  box-shadow: 0 4px 16px rgba(26, 110, 245, 0.38);
+  background: #991b1b;
+  box-shadow: 0 4px 16px rgba(185, 28, 28, 0.38);
   transform: translateY(-1px);
 }
 
@@ -259,7 +259,7 @@
   border-color: var(--accent);
   color: #fff;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(26, 110, 245, 0.3);
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);
 }
 
 .users__pageBtn:disabled {

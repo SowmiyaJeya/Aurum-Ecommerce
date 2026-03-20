@@ -20,8 +20,8 @@
 
 .imgUpload__dropzone:hover,
 .imgUpload__dropzone--active {
-  border-color: var(--accent, #2e6f5e);
-  background: color-mix(in srgb, var(--accent, #2e6f5e) 5%, transparent);
+  border-color: var(--accent, #b91c1c);
+  background: color-mix(in srgb, var(--accent, #b91c1c) 5%, transparent);
 }
 
 .imgUpload__icon {

@@ -641,3 +641,112 @@
   padding-right: 34px !important;
   cursor: pointer;
 }
+/*
+  Drop this into your Checkout.css (or import alongside it).
+  Replaces all green (#1a7a4a / #1a7a5e) accents with #b91c1c red.
+*/
+
+/* Step indicator — active/done circles */
+.checkout-step.active .step-circle,
+.checkout-step.done   .step-circle {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+.checkout-step.active .step-label {
+  color: #b91c1c !important;
+}
+.checkout-step.done  .step-label {
+  color: #b91c1c !important;
+}
+
+/* Card header icons — green → red */
+.card-header-icon.green,
+.card-header-icon.red {
+  background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
+  box-shadow: 0 4px 14px rgba(185,28,28,0.28) !important;
+}
+
+/* Focus rings on inputs */
+.form-input:focus {
+  border-color: rgba(185,28,28,0.45) !important;
+  box-shadow: 0 0 0 3px rgba(185,28,28,0.1) !important;
+}
+.form-input.autofilled {
+  border-color: rgba(185,28,28,0.3) !important;
+  background: #fef9f9 !important;
+}
+
+/* Autofill banner */
+.autofill-banner {
+  background: #fef2f2 !important;
+  border-color: rgba(185,28,28,0.25) !important;
+  color: #b91c1c !important;
+}
+
+/* Section labels */
+.section-label {
+  color: #b91c1c !important;
+}
+
+/* CTA (primary) button */
+.checkout-cta {
+  background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
+  box-shadow: 0 6px 22px rgba(185,28,28,0.32) !important;
+}
+.checkout-cta:hover:not(:disabled) {
+  background: linear-gradient(135deg, #991b1b, #b91c1c) !important;
+  box-shadow: 0 10px 30px rgba(185,28,28,0.42) !important;
+}
+
+/* Back button */
+.checkout-back-btn {
+  border-color: #b91c1c !important;
+  color: #b91c1c !important;
+}
+.checkout-back-btn:hover {
+  background: #fef2f2 !important;
+}
+
+/* Payment info banner */
+.payment-info-banner {
+  background: #fef2f2 !important;
+  border-color: rgba(185,28,28,0.2) !important;
+  color: #b91c1c !important;
+}
+
+/* COD box accent */
+.cod-info-box {
+  border-color: rgba(185,28,28,0.15) !important;
+  background: #fef9f9 !important;
+}
+
+/* Empty cart button */
+.checkout-empty-btn {
+  background: #b91c1c !important;
+}
+
+/* Success modal check + button */
+.success-check-wrap {
+  background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
+  box-shadow: 0 8px 24px rgba(185,28,28,0.35) !important;
+}
+.success-continue-btn {
+  background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
+  box-shadow: 0 4px 16px rgba(185,28,28,0.3) !important;
+}
+
+/* FREE delivery badge in summary */
+.val.free {
+  color: #b91c1c !important;
+}
+
+/* Breadcrumb links */
+.bc-link {
+  color: #b91c1c !important;
+}
+
+/* Step connector lines */
+.checkout-step.done::after,
+.checkout-step.active::after {
+  background: #b91c1c !important;
+}

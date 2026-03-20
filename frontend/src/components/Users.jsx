@@ -119,7 +119,7 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
         {/* Header */}
         <div style={{ padding: '22px 24px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#edf7f2', border: '1px solid rgba(26,122,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{isEdit ? '✏️' : '✦'}</div>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fef2f2', border: '1px solid rgba(185, 28, 28, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{isEdit ? '✏️' : '✦'}</div>
             <div>
               <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 17, color: '#1a1a1a' }}>{isEdit ? 'Edit User' : 'Add New User'}</div>
               <div style={{ fontSize: 13, color: '#999', marginTop: 2 }}>{isEdit ? 'Update the user details below' : 'Fill in the details to create a new user'}</div>
@@ -187,7 +187,7 @@ function UserModal({ mode, userData, onClose, onSubmit }) {
         {/* Footer */}
         <div style={{ padding: '16px 24px 22px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
           <button onClick={onClose} style={{ padding: '10px 22px', borderRadius: 10, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#555' }}>Cancel</button>
-          <button onClick={handleSubmit} disabled={submitting} style={{ padding: '10px 24px', borderRadius: 10, border: 'none', background: '#1a7a5e', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, opacity: submitting ? 0.7 : 1, boxShadow: '0 3px 10px rgba(26,122,94,0.25)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={handleSubmit} disabled={submitting} style={{ padding: '10px 24px', borderRadius: 10, border: 'none', background: '#b91c1c', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, opacity: submitting ? 0.7 : 1, boxShadow: '0 3px 10px rgba(185, 28, 28, 0.25)', display: 'flex', alignItems: 'center', gap: 8 }}>
             {submitting ? <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> : null}
             {isEdit ? 'Save Changes' : 'Create User'}
           </button>
@@ -455,7 +455,7 @@ export default function Users() {
           justify-content: center; transition: all 0.15s ease;
         }
         .users-pageBtn:hover:not(:disabled) { background: #f0f7f4; border-color: rgba(26,122,94,0.3); color: #1a7a5e; }
-        .users-pageBtn.active { background: #1a7a5e; color: #fff; border-color: #1a7a5e; font-weight: 700; }
+        .users-pageBtn.active { background: #b91c1c; color: #fff; border-color: #b91c1c; font-weight: 700; }
         .users-pageBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
         .users-pageEllipsis { color: #bbb; font-size: 16px; padding: 0 4px; line-height: 36px; }

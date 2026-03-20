@@ -130,18 +130,18 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
             <span key={c.id} style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               padding: '4px 8px 4px 11px', borderRadius: 999,
-              background: '#edf7f2', color: '#1a7a5e',
-              border: '1px solid rgba(26,122,94,0.25)',
+              background: '#fef2f2', color: '#b91c1c',
+              border: '1px solid rgba(185, 28, 28, 0.25)',
               fontSize: 12, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
               lineHeight: 1.4,
             }}>
               {c.category_name}
               <button type="button" onMouseDown={e => removeTag(c.id, e)}
                 style={{
-                  background: 'rgba(26,122,94,0.12)', border: 'none', cursor: 'pointer',
+                  background: 'rgba(185, 28, 28, 0.12)', border: 'none', cursor: 'pointer',
                   width: 16, height: 16, borderRadius: '50%', display: 'inline-flex',
                   alignItems: 'center', justifyContent: 'center',
-                  fontSize: 9, color: '#1a7a5e', lineHeight: 1, padding: 0, flexShrink: 0,
+                  fontSize: 9, color: '#b91c1c', lineHeight: 1, padding: 0, flexShrink: 0,
                 }}>✕</button>
             </span>
           ))}
@@ -165,10 +165,10 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '0 10px', borderRadius: 10, cursor: 'text', height: 42,
-          border: `1.5px solid ${open ? '#1a7a5e' : error ? '#e05555' : '#e0e0e0'}`,
+          border: `1.5px solid ${open ? '#b91c1c' : error ? '#e05555' : '#e0e0e0'}`,
           background: '#fff',
           transition: 'border-color 0.15s, box-shadow 0.15s',
-          boxShadow: open ? '0 0 0 3px rgba(26,122,94,0.07)' : 'none',
+          boxShadow: open ? '0 0 0 3px rgba(185, 28, 28, 0.07)' : 'none',
         }}
       >
         {/* Search icon */}
@@ -195,7 +195,7 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
 
         {/* Chevron */}
         <span style={{
-          color: open ? '#1a7a5e' : '#bbb', fontSize: 11,
+          color: open ? '#b91c1c' : '#bbb', fontSize: 11,
           transition: 'transform 0.2s, color 0.15s',
           transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
           flexShrink: 0, lineHeight: 1,
@@ -230,8 +230,8 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
             </span>
             {selectedIds.length > 0 && (
               <span style={{
-                fontSize: 11, fontWeight: 600, color: '#1a7a5e',
-                background: 'rgba(26,122,94,0.08)', padding: '2px 8px', borderRadius: 999,
+                fontSize: 11, fontWeight: 600, color: '#b91c1c',
+                background: 'rgba(185, 28, 28, 0.08)', padding: '2px 8px', borderRadius: 999,
                 fontFamily: "'DM Sans', sans-serif",
               }}>
                 {selectedIds.length} selected
@@ -259,7 +259,7 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '10px 14px', cursor: 'pointer',
-                    background: selected ? '#f0faf6' : isHover ? '#fafafa' : '#fff',
+                    background: selected ? '#fef2f2' : isHover ? '#fafafa' : '#fff',
                     borderBottom: '1px solid #f5f5f5',
                     transition: 'background 0.1s',
                   }}
@@ -269,7 +269,7 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
                     <div style={{
                       width: 16, height: 16, borderRadius: 5, flexShrink: 0,
                       border: selected ? 'none' : '1.5px solid #d0d0d0',
-                      background: selected ? '#1a7a5e' : 'transparent',
+                      background: selected ? '#b91c1c' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       transition: 'all 0.15s',
                     }}>
@@ -277,7 +277,7 @@ function CategoryChips({ categoryOptions, categoriesLoading, selectedIds, onChan
                     </div>
                     <span style={{
                       fontSize: 13, fontFamily: "'DM Sans', sans-serif",
-                      color: selected ? '#1a7a5e' : '#333',
+                      color: selected ? '#b91c1c' : '#333',
                       fontWeight: selected ? 600 : 400,
                     }}>
                       {c.category_name}
@@ -336,7 +336,7 @@ function BrandModal({ mode, initial, onClose, onSave, loading, categoryOptions, 
         {/* Header */}
         <div style={{ padding: '22px 24px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#edf7f2', border: '1px solid rgba(26,122,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🏷️</div>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fef2f2', border: '1px solid rgba(185, 28, 28, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🏷️</div>
             <div>
               <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 17, color: '#1a1a1a' }}>{isEdit ? 'Edit Brand' : 'Add New Brand'}</div>
               <div style={{ fontSize: 13, color: '#999', marginTop: 2 }}>{isEdit ? 'Update the brand details below.' : 'Enter details for the new brand.'}</div>
@@ -362,7 +362,7 @@ function BrandModal({ mode, initial, onClose, onSave, loading, categoryOptions, 
               <label style={lbl}>
                 Category <span style={{ color: '#e05555' }}>*</span>
                 {form.category_ids?.length > 0 && (
-                  <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 500, color: '#1a7a5e', background: 'rgba(26,122,94,0.08)', padding: '2px 8px', borderRadius: 999 }}>
+                  <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 500, color: '#b91c1c', background: 'rgba(185, 28, 28, 0.08)', padding: '2px 8px', borderRadius: 999 }}>
                     {form.category_ids.length} selected
                   </span>
                 )}
@@ -410,7 +410,7 @@ function BrandModal({ mode, initial, onClose, onSave, loading, categoryOptions, 
         <div style={{ padding: '16px 24px 22px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
           <button onClick={onClose} style={{ padding: '10px 22px', borderRadius: 10, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#555' }}>Cancel</button>
           <button onClick={handleSubmit} disabled={loading}
-            style={{ padding: '10px 24px', borderRadius: 10, border: 'none', background: '#1a7a5e', color: '#fff', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, opacity: loading ? 0.7 : 1, boxShadow: '0 3px 10px rgba(26,122,94,0.25)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            style={{ padding: '10px 24px', borderRadius: 10, border: 'none', background: '#b91c1c', color: '#fff', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, opacity: loading ? 0.7 : 1, boxShadow: '0 3px 10px rgba(26,122,94,0.25)', display: 'flex', alignItems: 'center', gap: 8 }}>
             {loading && <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />}
             {isEdit ? 'Save Changes' : 'Add Brand'}
           </button>
@@ -641,14 +641,14 @@ export default function Brands() {
 
         .brand-addBtn {
           display: flex; align-items: center; gap: 8px;
-          padding: 12px 22px; background: #1a7a5e; color: #fff;
+          padding: 12px 22px; background: #b91c1c; color: #fff;
           border: none; border-radius: 12px; cursor: pointer;
           font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
-          box-shadow: 0 4px 14px rgba(26,122,94,0.3);
+          box-shadow: 0 4px 14px rgba(185, 28, 28, 0.3);
           transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
           white-space: nowrap; flex-shrink: 0;
         }
-        .brand-addBtn:hover { background: #1d8a6a; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,122,94,0.35); }
+        .brand-addBtn:hover { background: #991b1b; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(185, 28, 28, 0.35); }
 
         .brand-card {
           background: #fff; border-radius: 18px;
@@ -721,7 +721,7 @@ export default function Brands() {
           justify-content: center; transition: all 0.15s ease;
         }
         .brand-pageBtn:hover:not(:disabled) { background: #f0f7f4; border-color: rgba(26,122,94,0.3); color: #1a7a5e; }
-        .brand-pageBtn.active { background: #1a7a5e; color: #fff; border-color: #1a7a5e; font-weight: 700; }
+        .brand-pageBtn.active { background: #b91c1c; color: #fff; border-color: #b91c1c; font-weight: 700; }
         .brand-pageBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
         .brand-pageEllipsis { color: #bbb; font-size: 16px; padding: 0 4px; line-height: 36px; }

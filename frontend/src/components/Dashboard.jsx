@@ -7,7 +7,7 @@ const MENUS = [
   { icon: '◎', label: 'Category', key: 'category', path: '/category' },
   { icon: '◈', label: 'Products', key: 'products', path: '/products' },
   { icon: '🛒', label: 'Products List', key: 'lists', path: '/lists' },
-  { icon: '◇', label: 'Settings', key: 'settings', path: '/settings' }
+  { icon: '◇', label: 'Orders', key: 'orders', path: '/orders' }
 
 ]
 
@@ -51,7 +51,7 @@ const styles = `
   .dash__sidebarLogoMark {
     width: 38px;
     height: 38px;
-    background: #1a7a5e;
+    background: #b91c1c;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -89,14 +89,14 @@ const styles = `
   }
 
   .dash__navItem:hover { background: rgba(255,255,255,0.07); }
-  .dash__navItem.active { background: #1a7a5e; }
+  .dash__navItem.active { background: #b91c1c; }
 
   .dash__navItem.active::before {
     content: '';
     position: absolute;
     left: 0; top: 25%;
     height: 50%; width: 3px;
-    background: #5ef0c8;
+    background: #f87171;
     border-radius: 0 3px 3px 0;
   }
 
@@ -158,7 +158,7 @@ const styles = `
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1a7a5e, #2db68a);
+    background: linear-gradient(135deg, #b91c1c, #ef4444);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,7 +175,7 @@ const styles = `
     bottom: 0; right: 0;
     width: 9px; height: 9px;
     border-radius: 50%;
-    background: #4ade80;
+    background: #fecaca;
     border: 2px solid #1a1a1a;
   }
 
@@ -272,7 +272,7 @@ const styles = `
     gap: 8px;
   }
 
-  .dash__topbarGem { font-size: 18px; color: #1a7a5e; }
+  .dash__topbarGem { font-size: 18px; color: #b91c1c; }
 
   .dash__topbarName {
     font-family: 'Syne', sans-serif;
@@ -300,8 +300,8 @@ const styles = `
     position: fixed;
     inset: 0;
     background-image:
-      radial-gradient(circle at 30% 20%, rgba(26,122,94,0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(26,122,94,0.03) 0%, transparent 50%);
+      radial-gradient(circle at 30% 20%, rgba(185,28,28,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(185,28,28,0.03) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }

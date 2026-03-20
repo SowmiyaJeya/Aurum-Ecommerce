@@ -56,11 +56,11 @@
 }
 
 .products__badge--active {
-  background: #edfaf4;
-  color: #1e7e4e;
-  border: 1px solid rgba(30, 126, 78, 0.2);
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid rgba(185, 28, 28, 0.2);
 }
-.products__badge--active::before { background: #1e7e4e; }
+.products__badge--active::before { background: #b91c1c; }
 
 .products__badge--inactive {
   background: #fdf2f2;

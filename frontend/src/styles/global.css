@@ -1,6 +1,6 @@
 /* ============================================================
    global.css — Design tokens, resets, and base styles
-   Light theme: warm ivory + deep teal accents
+   Light theme: warm ivory + deep red accents
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -12,11 +12,11 @@
   --surface:     #ffffff;        /* card surface */
   --surface-2:   #f0ece4;        /* subtle inner backgrounds */
 
-  /* Accent — deep teal */
-  --accent:      #1a6b6b;
-  --accent-dark: #124d4d;
-  --accent-light:#e6f4f4;
-  --accent-glow: rgba(26,107,107,0.18);
+  /* Accent — deep red */
+  --accent:      #b91c1c;
+  --accent-dark: #991b1b;
+  --accent-light:#fef2f2;
+  --accent-glow: rgba(185, 28, 28, 0.18);
 
   /* Text */
   --text:        #1c1c1e;
