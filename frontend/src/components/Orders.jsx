@@ -802,7 +802,7 @@ const updateOrderStatus = useCallback(async ({ order_id, status, reason, note })
                             <div className="ord-name">{o.customer_name}</div>
                             {mobiles[o.order_id] ? (
                               <div className="ord-phone">
-                                <span>📞</span>
+                                <span></span>
                                 {mobiles[o.order_id]}
                               </div>
                             ) : (

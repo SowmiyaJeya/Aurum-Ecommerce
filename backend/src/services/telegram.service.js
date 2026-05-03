@@ -88,7 +88,7 @@ const sendOrderStatusMessage = async (chatId, data) => {
     message += `⚠️Your Order ID # ${order_id} was ${status} due to ${reason}\n`;
   }
 
-  message += `\nPlease contact contact@shivasystems.com if needed.`;
+  message += `\nPlease contact contact@aurum.com if needed.`;
 
   await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
     chat_id: chatId,

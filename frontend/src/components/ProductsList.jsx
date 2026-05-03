@@ -711,7 +711,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
         <div className="site-topbar-links">
           <AuthHeaderSection />
           <div className="site-topbar-divider" />
-          {[['Email :', 'contact@shivasystems.com'], ['Contact : +91', '9876543210'], ['Support :', '+91 1234567890']].map(([l, v], i) => (
+          {[['Email :', 'contact@aurum.com'], ['Contact : +91', '9876543210'], ['Support :', '+91 1234567890']].map(([l, v], i) => (
             <React.Fragment key={i}>{i > 0 && <div className="site-topbar-divider" />}<div className="site-topbar-item"><span className="site-topbar-label">{l}</span><span className="site-topbar-val">{v}</span></div></React.Fragment>
           ))}
         </div>
@@ -720,7 +720,7 @@ function SiteHeader({ cartCount, wishlistCount, onCategorySelect, onProductSelec
       <div className="site-mainbar">
         <div className="site-logo" onClick={onHomeClick}>
           <div className="site-logo-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#b91c1c" /><text x="14" y="20" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">✦</text></svg></div>
-          <span className="site-logo-name">Shiva Systems</span>
+          <span className="site-logo-name">Aurum</span>
         </div>
         <div className="site-searchbar" ref={searchRef} style={{ position:'relative' }}>
           <div className="site-search-cat">

@@ -20,7 +20,7 @@ exports.sendAdminOrderMail = async ({
 }) => {
   try {
     await transporter.sendMail({
-      from: `"Shiva Systems Order Details" <${process.env.SMTP_USER}>`,
+      from: `"Aurum Order Details" <${process.env.SMTP_USER}>`,
       to: admin_email,
       subject: `🧾 New Order Invoice - #${order_id}`,
       html: `

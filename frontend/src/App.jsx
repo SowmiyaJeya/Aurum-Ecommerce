@@ -32,7 +32,7 @@ function AuthPage({ defaultTab }) {
         <div className="cardHeader">
           <div className="brandRow">
             <div className="brandGem">✦</div>
-            <span className="brandName">Shiva Systems</span>
+            <span className="brandName">Aurum</span>
           </div>
 
           <div className="tabRow" role="tablist">

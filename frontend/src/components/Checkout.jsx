@@ -169,7 +169,7 @@ function SuccessModal({ orderId, onContinue }) {
         </div>
         <div className="success-title">Order Placed! 🎉</div>
         <p className="success-sub">
-          Thank you for shopping with Shiva Systems. Your order has been confirmed
+          Thank you for shopping with Aurum. Your order has been confirmed
           and will be delivered soon.
         </p>
         <div className="success-order-id">ORDER #{orderId}</div>
